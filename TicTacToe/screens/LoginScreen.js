@@ -3,7 +3,7 @@ import {View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity} from
 import { auth } from '../firebaseConfig';
 import AnimatedBackground from '../components/AnimatedBackground.js';
 
-export default function LoginScreen({ onLogin }) {
+export default function LoginScreen({ onLogin, fontsLoaded }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -43,8 +43,12 @@ export default function LoginScreen({ onLogin }) {
     return(
         <View style={styles.container}>
             <AnimatedBackground/>
-            <Text style ={styles.header}>Tic Tac Toe</Text>
-            <Text style ={styles.header}>Game</Text>
+            {fontsLoaded && (
+                <View style={styles.headerBackground}>
+                    <Text style={styles.header}>Tic Tac Toe</Text>
+                    <Text style={styles.header}>Game</Text>
+                </View>
+            )}
             <View style ={styles.frame}>
                 <TextInput
                     style={styles.input}
@@ -81,12 +85,23 @@ const styles = StyleSheet.create({
         alignItems:'center',
         backgroundColor: 'white'
     },
-    header:{
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 20
+    headerBackground: {
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        borderRadius: 10,
+        padding: 10,
+        marginBottom: 20,
     },
-    frame:{
+    header: {
+        fontSize: 40,
+        marginBottom: 20,
+        fontFamily: 'Righteous_400Regular',
+        color: '#FFBC42',
+        textAlign: 'center',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: -1, height: 1 },
+        textShadowRadius: 10,
+      },
+    frame: {
         borderWidth: 2,
         borderColor: '#333',
         borderRadius: 10,
