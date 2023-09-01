@@ -29,6 +29,13 @@
             {
               "client_id": "120604308516-aht85nq6pp5pco475qp5q2sr6pv0m6cn.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "120604308516-635dfv489ni1c13trj71d983eeh79jvh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.arik.tictactoe"
+              }
             }
           ]
         }

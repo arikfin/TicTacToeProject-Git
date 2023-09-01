@@ -3,15 +3,15 @@ import {View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity} from
 import { auth } from '../firebaseConfig';
 import AnimatedBackground from '../components/AnimatedBackground.js';
 
+
+
 export default function LoginScreen({ onLogin, fontsLoaded }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
 
     const handleLogin = () => {
-        firebase
-        .auth()
-        .signInWithAndPassword(email, password)
+        auth.signInWithEmailAndPassword( email, password)
         .then((userCredential) => {
             // Signed in
             var user = userCredential.user;
@@ -25,9 +25,7 @@ export default function LoginScreen({ onLogin, fontsLoaded }) {
     };
 
     const handleRegister = () => {
-        firebase
-        .auth()
-        .signInWithAndPassword(email, password)
+        auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
             // Signed in
             var user = userCredential.user;
