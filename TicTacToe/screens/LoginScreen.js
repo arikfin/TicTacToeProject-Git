@@ -1,41 +1,33 @@
 import React, {useState} from 'react';
 import {View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity} from 'react-native';
-import { auth } from '../firebaseConfig';
 import AnimatedBackground from '../components/AnimatedBackground.js';
-
+import { auth } from '../firebase.js';
 
 
 export default function LoginScreen({ onLogin, fontsLoaded }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    
 
     const handleLogin = () => {
-        auth.signInWithEmailAndPassword( email, password)
-        .then((userCredential) => {
-            // Signed in
-            var user = userCredential.user;
-            onLogin(user);
+        auth
+        .signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+            const user = userCredential.user;
+            console.log(user.email);
         })
-        .catch((error) => {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            Alert.alert(errorMessage);
-        })
+        .catch(error => alert(error.message))
     };
 
     const handleRegister = () => {
-        auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Signed in
-            var user = userCredential.user;
-            onLogin(user);
+        auth
+        .createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+            const user = userCredential.user;
+            console.log(user.email);
         })
-        .catch((error) => {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            Alert.alert(errorMessage);
-        })
+        .catch(error => alert(error.message))
     };
 
     return(

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
-import { auth, firestore } from '../firebaseConfig';
 
 export default function ProfileScreen() {
   const [nickname, setNickname] = useState('');
