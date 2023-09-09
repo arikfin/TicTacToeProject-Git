@@ -1,13 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, memo } from 'react';
 import { View, Animated, StyleSheet, Dimensions } from 'react-native';
-import { Svg, Text } from 'react-native-svg';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const NUM_ELEMENTS = 20; // Number of falling X's and O's
 
-export default function AnimatedBackground() {
+const AnimatedBackground = () => {
     const animatedValues = [];
 
     // Initialize animated values for each X or O
@@ -100,3 +99,5 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
 });
+
+export default memo(AnimatedBackground);

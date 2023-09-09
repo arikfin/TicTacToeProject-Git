@@ -11,13 +11,10 @@ const firebaseConfig = {
     appId: "1:120604308516:web:2fdc68b545e956a22ad4b1"
   };
 
-let app;
-if(firebase.apps.length === 0){
-    app = firebase.initializeApp(firebaseConfig);
-} else {
-    app = firebase.app();
-}
 
-const auth = firebase.auth();
 
-export { auth };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+
+export { app,signInWithEmailAndPassword,createUserWithEmailAndPassword,getAuth,User,signOut,onAuthStateChanged, auth };

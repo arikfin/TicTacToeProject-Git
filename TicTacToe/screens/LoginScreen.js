@@ -1,18 +1,17 @@
 import React, {useState} from 'react';
 import {View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import AnimatedBackground from '../components/AnimatedBackground.js';
-import { auth } from '../firebase.js';
+import { app,signInWithEmailAndPassword,createUserWithEmailAndPassword,getAuth,User,signOut,onAuthStateChanged,auth } from '../firebase.js';
 
 
 export default function LoginScreen({ onLogin, fontsLoaded }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    
+    const auth = getAuth();
 
     const handleLogin = () => {
-        auth
-        .signInWithEmailAndPassword(email, password)
+        signInWithEmailAndPassword(auth,email,password)
         .then(userCredential => {
             const user = userCredential.user;
             console.log(user.email);
@@ -21,8 +20,7 @@ export default function LoginScreen({ onLogin, fontsLoaded }) {
     };
 
     const handleRegister = () => {
-        auth
-        .createUserWithEmailAndPassword(email, password)
+        createUserWithEmailAndPassword(auth,email, password)
         .then(userCredential => {
             const user = userCredential.user;
             console.log(user.email);
