@@ -4,7 +4,7 @@ import AnimatedBackground from '../components/AnimatedBackground.js';
 import { app,signInWithEmailAndPassword,createUserWithEmailAndPassword,getAuth,User,signOut,onAuthStateChanged,auth } from '../firebase.js';
 
 
-export default function LoginScreen({ onLogin, fontsLoaded }) {
+export default function LoginScreen({ onLogin, fontsLoaded, navigation  }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -56,9 +56,14 @@ export default function LoginScreen({ onLogin, fontsLoaded }) {
                     onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                {/* <TouchableOpacity 
                     style={styles.button} 
                     onPress={handleRegister}>
+                    <Text style={styles.buttonText}>Register</Text>
+                </TouchableOpacity> */}
+                <TouchableOpacity 
+                    style={styles.button} 
+                    onPress={() => navigation.navigate('Register')}>
                     <Text style={styles.buttonText}>Register</Text>
                 </TouchableOpacity>
             </View>
