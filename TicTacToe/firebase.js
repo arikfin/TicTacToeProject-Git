@@ -4,10 +4,11 @@ import { signInWithEmailAndPassword,
          getAuth,
          onAuthStateChanged,
          User,
-         signOut,
-         initializeAuth,
-         getReactNativePersistence} from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+         signOut } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import ReactNativeAsyncStorage  from '@react-native-async-storage/async-storage';
+import { getStorage } from 'firebase/storage';
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyAnpDYcES1Of4Li4s-0Rme4dqaaMYWX50g",
@@ -15,17 +16,18 @@ const firebaseConfig = {
     projectId: "tictactoeapp-b558d",
     storageBucket: "tictactoeapp-b558d.appspot.com",
     messagingSenderId: "120604308516",
-    appId: "1:120604308516:web:2fdc68b545e956a22ad4b1"
+    appId: "1:120604308516:web:2fdc68b545e956a22ad4b1",
+    storageBucket: 'gs://tictactoeapp-b558d.appspot.com/'
   };
 
 
 
   const app = initializeApp(firebaseConfig);
-  // const auth = getAuth(app);
   const auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
   });
 
+  const storage = getStorage(app);
 
 export { app, 
          signInWithEmailAndPassword,
@@ -35,4 +37,5 @@ export { app,
          signOut,
          onAuthStateChanged,
          auth,
+         storage
           };
