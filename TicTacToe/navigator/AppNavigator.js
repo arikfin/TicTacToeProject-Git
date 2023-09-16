@@ -19,9 +19,10 @@ export default function AppNavigator({ user, onLogin, fontsLoaded }) {
           </Stack.Screen>
           <Stack.Screen 
             name="Register"
-            component={ProfileScreen}
             options={{headerShown: false}} 
-            />
+          >
+            {(props) => <ProfileScreen {...props} user={user} />}
+          </Stack.Screen>
         </>
       )}
     </Stack.Navigator>

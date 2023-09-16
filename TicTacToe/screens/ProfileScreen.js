@@ -1,65 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Alert, Image } from 'react-native';
 import AnimatedBackground from '../components/AnimatedBackground';
-import ImagePicker from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, doc, setDoc} from 'firebase/firestore';
-import { storage } from '../firebase';
+import { storage, auth } from '../firebase';
+import defaultAvatar from '../assets/ORF8060.jpg';
+import { onAuthStateChanged } from 'firebase/auth';
 
-export default function ProfileScreen({navigation}) {
+export default function ProfileScreen({navigation, user}) {
+  console.log("ProfileScreen rendered");
   const [nickname, setNickname] = useState('');
   const [location, setLocation] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [userID, setUserID] = useState(user ? user.uid : null);
 
-  const storage = getStorage();
+
   const db = getFirestore();
 
-  
 
   useEffect(() => {
-    // Fetch user data from Firestore
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed");
+      if (user) {
+        console.log("User is signed in:", user);
+        await setUserID(user.uid);
+        console.log("UserID set in useEffect:", user.uid);
+      } else {
+        console.log("No user is signed in.");
+      }
+    });
+  
+    return () => unsubscribe();
   }, []);
 
   const handleSaveProfile = async () => {
-    // Save updated profile data to Firestore
-    const userDoc = doc(db, 'users', email); // Replace 'email' with the user's unique ID
-    await setDoc(userDoc, {
-      nickname,
-      location,
-      avatar
-    });
+    console.log("UserID in handleSaveProfile:", userID); 
+    if (userID) {  // Check if userID is not null
+      const userDoc = doc(db, 'users', userID);
+      await setDoc(userDoc, {
+        nickname,
+        location,
+        avatar
+      });
+    } else {
+      // Handle the case where userID is null
+      console.log("User ID is null. Cannot save profile.");
+    }
   };
-
-  const chooseImage = () => {
-    const options = {
-      title: 'Select Avatar',
-      storageOptions: {
-        skipBackup: true,
-        path: 'images',
-      },
-    };
-
-    ImagePicker.showImagePicker(options, async (response) => {
-      if(response.didCancel){
-        console.log('User cancelled image picker');
-      } else if(response.error){
-        console.log('ImagePicker error: ' , response.error);
-      } else {
-        const source = {uri: response.uri};
-        setAvatar(source);
-
-        // Upload to Firebase Storage
-        const storageRef = ref(storage, `avatars/${email}.jpg`); // Replace 'email' with the user's unique ID
-        await uploadBytes(storageRef, response.data);
-
+  
+  const chooseImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1
+    });
+  
+    if (!result.canceled) {
+      const { assets } = result;
+      const uri = assets[0].uri;
+  
+      // Check if user is signed in before uploading image
+      if (userID) {
+        //Upload to Firebase Storage
+        const storageRef = ref(storage, `avatars/${userID}.jpg`);
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        await uploadBytes(storageRef, blob);
+  
         // Get download URL and store in Firestore
         const url = await getDownloadURL(storageRef);
-        setAvatar({ uri: url });
+        setAvatar(url);
+  
+        console.log("New avatar URL:", avatar);
+      } else {
+        console.log("User is not signed in. Cannot upload image.");
       }
-    });
-  }
+    }
+  };
+
+  
 
 
   const handleGoBack = () => {
@@ -72,7 +95,7 @@ export default function ProfileScreen({navigation}) {
     <View style={styles.frame}>  
       <TouchableOpacity onPress={chooseImage}>
         <Image
-          source={avatar || require('./default-avatar.jpg')} // Replace './default-avatar.jpg' with your default avatar image
+          source={avatar ? { uri: avatar } : defaultAvatar} // Replace './default-avatar.jpg' with your default avatar image
           style={styles.avatar}
         />
       </TouchableOpacity>
@@ -106,6 +129,7 @@ export default function ProfileScreen({navigation}) {
         onPress={handleSaveProfile}>
         <Text style={styles.buttonText}>Save Profile</Text>
       </TouchableOpacity>
+      <Button title="Set Test UserID" onPress={() => setUserID("testUserID")} />
       <TouchableOpacity 
           style={styles.goBackButton} 
           onPress={handleGoBack}>

@@ -15,6 +15,7 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation  }) {
         .then(userCredential => {
             const user = userCredential.user;
             console.log(user.email);
+            navigation.navigate('Game');
         })
         .catch(error => alert(error.message))
     };
@@ -23,7 +24,8 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation  }) {
         createUserWithEmailAndPassword(auth,email, password)
         .then(userCredential => {
             const user = userCredential.user;
-            console.log(user.email);
+            console.log("User created:", user.email);
+            navigation.navigate('Register');
         })
         .catch(error => alert(error.message))
     };
