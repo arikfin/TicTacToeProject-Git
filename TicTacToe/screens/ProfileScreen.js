@@ -7,9 +7,9 @@ import { getFirestore, doc, setDoc} from 'firebase/firestore';
 import { storage, auth } from '../firebase';
 import defaultAvatar from '../assets/ORF8060.jpg';
 import { onAuthStateChanged } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth } from '../firebase.js';
 
 export default function ProfileScreen({navigation, user}) {
-  console.log("ProfileScreen rendered");
   const [nickname, setNickname] = useState('');
   const [location, setLocation] = useState('');
   const [email, setEmail] = useState('');
@@ -18,38 +18,57 @@ export default function ProfileScreen({navigation, user}) {
   const [userID, setUserID] = useState(user ? user.uid : null);
 
 
+  const auth = getAuth();
   const db = getFirestore();
 
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed");
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("User is signed in:", user);
-        await setUserID(user.uid);
-        console.log("UserID set in useEffect:", user.uid);
+        console.log("User is signed in");
+        setUserID(user.uid);
+        navigation.navigate('Game');
       } else {
         console.log("No user is signed in.");
+        setUserID(null);
       }
     });
-  
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
+
   const handleSaveProfile = async () => {
-    console.log("UserID in handleSaveProfile:", userID); 
-    if (userID) {  // Check if userID is not null
-      const userDoc = doc(db, 'users', userID);
-      await setDoc(userDoc, {
+    createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      const userDoc = doc(db, 'users', user.uid);
+      return setDoc(userDoc, {
         nickname,
         location,
-        avatar
       });
-    } else {
-      // Handle the case where userID is null
-      console.log("User ID is null. Cannot save profile.");
-    }
+    })
+    .then(async () => {
+      if(avatar){
+        const storageRef = ref(storage, `avatars/${auth.currentUser.uid}.jpg`);
+        const response = await fetch(selectedImageUri);
+        const blob = await response.blob();
+        await uploadBytes(storageRef, blob);
+
+        const url = await getDownloadURL(storageRef);
+        const userDoc = doc(db, 'users', auth.currentUser.uid);
+        await updateDoc(userDoc, { avatar: url }); 
+      }
+    })
+    .catch((error) => {
+      console.log("Error:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert('Error', 'This email is already in use. Please use a different email.');
+      } else {
+        Alert.alert('Error', error.message);
+      }
+    });
   };
+  
   
   const chooseImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -62,23 +81,7 @@ export default function ProfileScreen({navigation, user}) {
     if (!result.canceled) {
       const { assets } = result;
       const uri = assets[0].uri;
-  
-      // Check if user is signed in before uploading image
-      if (userID) {
-        //Upload to Firebase Storage
-        const storageRef = ref(storage, `avatars/${userID}.jpg`);
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        await uploadBytes(storageRef, blob);
-  
-        // Get download URL and store in Firestore
-        const url = await getDownloadURL(storageRef);
-        setAvatar(url);
-  
-        console.log("New avatar URL:", avatar);
-      } else {
-        console.log("User is not signed in. Cannot upload image.");
-      }
+      setAvatar(uri);
     }
   };
 
@@ -129,7 +132,6 @@ export default function ProfileScreen({navigation, user}) {
         onPress={handleSaveProfile}>
         <Text style={styles.buttonText}>Save Profile</Text>
       </TouchableOpacity>
-      <Button title="Set Test UserID" onPress={() => setUserID("testUserID")} />
       <TouchableOpacity 
           style={styles.goBackButton} 
           onPress={handleGoBack}>

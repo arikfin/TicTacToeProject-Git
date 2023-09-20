@@ -13,22 +13,14 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation  }) {
     const handleLogin = () => {
         signInWithEmailAndPassword(auth,email,password)
         .then(userCredential => {
-            const user = userCredential.user;
-            console.log(user.email);
-            navigation.navigate('Game');
+          const user = userCredential.user;
+          console.log("Logged in user ID:", user.uid);
+          navigation.navigate('Game');
         })
-        .catch(error => alert(error.message))
-    };
+        .catch(error => alert(error.message));
+      };
 
-    const handleRegister = () => {
-        createUserWithEmailAndPassword(auth,email, password)
-        .then(userCredential => {
-            const user = userCredential.user;
-            console.log("User created:", user.email);
-            navigation.navigate('Register');
-        })
-        .catch(error => alert(error.message))
-    };
+      
 
     return(
         <View style={styles.container}>
