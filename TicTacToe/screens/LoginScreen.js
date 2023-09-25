@@ -1,24 +1,53 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import AnimatedBackground from '../components/AnimatedBackground.js';
 import { app,signInWithEmailAndPassword,createUserWithEmailAndPassword,getAuth,User,signOut,onAuthStateChanged,auth } from '../firebase.js';
 
 
-export default function LoginScreen({ onLogin, fontsLoaded, navigation  }) {
+export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [userID, setUserID] = useState(user ? user.uid : null);
 
     const auth = getAuth();
 
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if(user) { 
+                console.log("User is signed in");
+                setUserID(user.uid);
+                navigation.navigate('Game');
+
+            }
+        });
+        return unsubscribe;
+    }, []);
+
     const handleLogin = () => {
-        signInWithEmailAndPassword(auth,email,password)
+        if(email === '' || password === ''){
+            Alert.alert('Error','Please enter your email and password');
+            return;
+        }
+    
+        signInWithEmailAndPassword(auth, email, password)
         .then(userCredential => {
-          const user = userCredential.user;
-          console.log("Logged in user ID:", user.uid);
-          navigation.navigate('Game');
+            const user = userCredential.user;
+            console.log("Logged in user ID:", user.uid);
+            navigation.navigate('Game');
         })
-        .catch(error => alert(error.message));
-      };
+        .catch((error) => {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                    Alert.alert('Error', 'Invalid email or password. Please try again.');
+                    break;
+                default:
+                    Alert.alert('Error', 'An error occurred. Please try again.');
+                    break;
+            }
+        });
+    };
 
       
 

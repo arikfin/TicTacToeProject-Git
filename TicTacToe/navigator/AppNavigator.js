@@ -24,7 +24,12 @@ export default function AppNavigator({ user, onLogin, fontsLoaded }) {
       >
         {(props) => <ProfileScreen {...props} user={user} />}
       </Stack.Screen>
-      <Stack.Screen name="Game" component={GameScreen} />
+      <Stack.Screen 
+        name="Game"
+        options={{
+          headerShown: false,
+        }} 
+        component={GameScreen} />
     </Stack.Navigator>
   );
 }
