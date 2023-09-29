@@ -27,7 +27,7 @@ export default function ProfileScreen({navigation, user}) {
       if (user) {
         console.log("User is signed in");
         setUserID(user.uid);
-        navigation.navigate('Game');
+        navigation.navigate('GameModeSelection');
       } else {
         console.log("No user is signed in.");
         setUserID(null);

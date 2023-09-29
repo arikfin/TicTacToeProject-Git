@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from '../screens/LoginScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GameScreen from '../screens/GameScreen';
+import GameModeSelectionScreen from '../screens/GameModeSelectionScreen';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,13 @@ export default function AppNavigator({ user, onLogin, fontsLoaded }) {
       >
         {(props) => <ProfileScreen {...props} user={user} />}
       </Stack.Screen>
+      <Stack.Screen
+        name="GameModeSelection"
+        options={{
+          headerShown: false,
+        }}>
+          {(props) => <GameModeSelectionScreen {...props} fontsLoaded={fontsLoaded} />}
+        </Stack.Screen>
       <Stack.Screen 
         name="Game"
         options={{

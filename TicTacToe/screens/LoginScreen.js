@@ -16,7 +16,7 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  })
             if(user) { 
                 console.log("User is signed in");
                 setUserID(user.uid);
-                navigation.navigate('Game');
+                navigation.navigate('GameModeSelection');
 
             }
         });
@@ -33,7 +33,7 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  })
         .then(userCredential => {
             const user = userCredential.user;
             console.log("Logged in user ID:", user.uid);
-            navigation.navigate('Game');
+            navigation.navigate('GameModeSelection');
         })
         .catch((error) => {
             switch (error.code) {
