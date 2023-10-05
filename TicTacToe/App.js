@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ActivityIndicator } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { useFonts, Righteous_400Regular } from '@expo-google-fonts/righteous';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './navigator/AppNavigator';
