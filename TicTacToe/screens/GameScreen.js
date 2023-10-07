@@ -47,10 +47,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20
+    padding: 20,
+    backgroundColor: '#007BFF'
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
+    color: 'white'
   },
 });
