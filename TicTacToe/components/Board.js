@@ -1,10 +1,10 @@
-import React, { useState, useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import Cell from './Cell';
 import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 
 
-export default function Board({ onGameEnd }) {
+export default function Board({ onGameEnd, onPlayerChange }) {
     const [board, setBoard] = useState(Array(9).fill(null));
     const [currentPlayer, setCurrentPlayer] = useState('X');
     const [gameOver, setGameOver] = useState(false);
@@ -14,12 +14,13 @@ export default function Board({ onGameEnd }) {
     useEffect(() => {
         verticalLineHeight.value = withTiming(300, { duration: 1000, easing: Easing.linear });
         horizontalLineWidth.value = withTiming(300, { duration: 1000, easing: Easing.linear });
-    }, []);
+        onPlayerChange(currentPlayer);
+    }, [currentPlayer]);
 
     const verticalAnimatedStyle = useAnimatedStyle(() => {
         return {
             height: verticalLineHeight.value,
-            top: 300 - verticalLineHeight.value,  
+            top: 300 - verticalLineHeight.value,
         };
     });
 
@@ -41,9 +42,9 @@ export default function Board({ onGameEnd }) {
         );
     }
 
-    
-    
-    
+
+
+
 
     const handlePress = (index) => {
         if (board[index] || gameOver) return;
@@ -52,7 +53,7 @@ export default function Board({ onGameEnd }) {
         newBoard[index] = currentPlayer;
         setBoard(newBoard);
 
-        if(checkWinner(newBoard, currentPlayer)) {
+        if (checkWinner(newBoard, currentPlayer)) {
             setGameOver(true);
             onGameEnd(currentPlayer);
             return;
@@ -64,7 +65,7 @@ export default function Board({ onGameEnd }) {
 
         setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
 
-        
+
     };
 
     const checkWinner = (board, player) => {
@@ -74,7 +75,7 @@ export default function Board({ onGameEnd }) {
             [0, 4, 8], [2, 4, 6]  // diagonals
         ];
 
-        return winningCombinations.some(combinations =>{
+        return winningCombinations.some(combinations => {
             return combinations.every(index => board[index] === player);
         });
     };
