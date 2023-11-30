@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, firebase, getAuth } from "../firebase";
 import Board from "../components/Board.js";
 
 export default function GameScreen({ navigation }) {
@@ -11,6 +11,16 @@ export default function GameScreen({ navigation }) {
   const [xWins, setXWins] = useState(0);
   const [oWins, setOWins] = useState(0);
   const [draws, setDraws] = useState(0);
+  const [userProfilePhoto, setUserProfilePhoto] = useState(null);
+
+  useEffect(() => {
+    // Assuming Firebase Authentication is set up
+    const user = getAuth().currentUser;
+    if (user) {
+      setUserProfilePhoto(user.photoURL);
+    }
+  }, []);
+
 
   const handleSignOut = () => {
     signOut(auth)
@@ -49,6 +59,13 @@ export default function GameScreen({ navigation }) {
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.buttonText}>Sign out</Text>
       </TouchableOpacity>
+
+      {userProfilePhoto && (
+        <Image
+          source={{ uri: userProfilePhoto }}
+          style={styles.profilePhoto}
+        />
+      )}
 
       <View style={styles.turnIndicators}>
         <View
@@ -181,5 +198,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     minWidth: 80, // Ensures that the frame has a minimum width
     textAlign: "center", // Centers the text
+  },
+  profilePhoto: {
+    width: 50, // Adjust the size as needed
+    height: 50,
+    borderRadius: 25, // Circular image
+    marginBottom: 10, // Space between photo and indicators
   },
 });
