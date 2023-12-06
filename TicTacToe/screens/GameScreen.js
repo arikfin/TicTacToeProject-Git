@@ -2,7 +2,27 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, firebase, getAuth } from "../firebase";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import Board from "../components/Board.js";
+import avatar1 from "../assets/avatars/black-female.jpg";
+import avatar2 from "../assets/avatars/black-male.jpg";
+import avatar3 from "../assets/avatars/blonde-female.jpg";
+import avatar4 from "../assets/avatars/blonde-male.jpg";
+import avatar5 from "../assets/avatars/hipster-female.jpg";
+import avatar6 from "../assets/avatars/hipster-male.jpg";
+import avatar7 from "../assets/avatars/white-female.jpg";
+import avatar8 from "../assets/avatars/white-male.jpg";
+
+const avatars = {
+  avatar1,
+  avatar2,
+  avatar3,
+  avatar4,
+  avatar5,
+  avatar6,
+  avatar7,
+  avatar8,
+};
 
 export default function GameScreen({ navigation }) {
   const [gameResult, setGameResult] = useState(null);
@@ -11,16 +31,24 @@ export default function GameScreen({ navigation }) {
   const [xWins, setXWins] = useState(0);
   const [oWins, setOWins] = useState(0);
   const [draws, setDraws] = useState(0);
-  const [userProfilePhoto, setUserProfilePhoto] = useState(null);
+  const [userAvatar, setUserAvatar] = useState(null);
 
   useEffect(() => {
-    // Assuming Firebase Authentication is set up
-    const user = getAuth().currentUser;
-    if (user) {
-      setUserProfilePhoto(user.photoURL);
-    }
-  }, []);
+    const fetchUserAvatar = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(getFirestore(), "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const avatarKey = userData.avatar; // Assuming it's saved as 'avatar1', 'avatar2', etc.
+          setUserAvatar(avatars[avatarKey]); // Set the correct avatar image
+        }
+      }
+    };
 
+    fetchUserAvatar();
+  }, []);
 
   const handleSignOut = () => {
     signOut(auth)
@@ -60,12 +88,7 @@ export default function GameScreen({ navigation }) {
         <Text style={styles.buttonText}>Sign out</Text>
       </TouchableOpacity>
 
-      {userProfilePhoto && (
-        <Image
-          source={{ uri: userProfilePhoto }}
-          style={styles.profilePhoto}
-        />
-      )}
+      {userAvatar && <Image source={userAvatar} style={styles.profilePhoto} />}
 
       <View style={styles.turnIndicators}>
         <View
@@ -200,9 +223,8 @@ const styles = StyleSheet.create({
     textAlign: "center", // Centers the text
   },
   profilePhoto: {
-    width: 50, // Adjust the size as needed
+    width: 50,
     height: 50,
-    borderRadius: 25, // Circular image
-    marginBottom: 10, // Space between photo and indicators
+    borderRadius: 25, // Space between photo and indicators
   },
 });
