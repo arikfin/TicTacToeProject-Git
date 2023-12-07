@@ -40,7 +40,20 @@ const avatars = [
   avatar8,
 ];
 
+const avatarUrls = [
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-female.jpg?alt=media&token=50529a12-7172-47e9-8209-e32e446b9c69',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-male.jpg?alt=media&token=0e6ad8a6-6c30-48d2-aed0-87e83f532f4e',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-female.jpg?alt=media&token=97218cc7-e989-4d15-a49b-0dd00b1a1246',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-male.jpg?alt=media&token=ec758017-d1b7-42f0-a7fa-a67bd6e8532e',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-female.jpg?alt=media&token=e5449abe-038a-4b7f-8883-9822eba8d8f3',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-male.jpg?alt=media&token=1e683a8d-f416-4c05-b091-d61520f189b7',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-female.jpg?alt=media&token=fc7b4b18-2399-43d4-a90e-f547320965c7',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-male.jpg?alt=media&token=6ef9ad2c-dafc-4867-9905-135cb4f9bc09',
+]
+
 export default function ProfileScreen({ navigation, user }) {
+
+
   const [nickname, setNickname] = useState("");
   const [location, setLocation] = useState("");
   const [email, setEmail] = useState("");
@@ -49,6 +62,9 @@ export default function ProfileScreen({ navigation, user }) {
   const [userID, setUserID] = useState(user ? user.uid : null);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [isLoadingAvatar, setIsLoadingAvatar] = useState(false);
+
 
   const getAvatarIdentifier = (index) => {
     return `avatar${index + 1}`; // This will give you 'avatar1', 'avatar2', etc.
@@ -56,6 +72,8 @@ export default function ProfileScreen({ navigation, user }) {
 
   const auth = getAuth();
   const db = getFirestore();
+
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
@@ -71,76 +89,86 @@ export default function ProfileScreen({ navigation, user }) {
     return unsubscribe;
   }, []);
 
-  const handleSaveProfile = async () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        const userDoc = doc(db, "users", user.uid);
-        return setDoc(userDoc, {
-          nickname,
-          location,
-        });
-      })
-      .then(async () => {
-        if (avatar) {
-          const storageRef = ref(
-            storage,
-            `avatars/${auth.currentUser.uid}.jpg`
-          );
-          const response = await fetch(selectedImageUri);
-          const blob = await response.blob();
-          await uploadBytes(storageRef, blob);
 
-          const url = await getDownloadURL(storageRef);
-          const userDoc = doc(db, "users", auth.currentUser.uid);
-          await updateDoc(userDoc, { avatar: url });
-        }
-      })
-      .catch((error) => {
-        console.log("Error:", error);
-        if (error.code === "auth/email-already-in-use") {
-          Alert.alert(
-            "Error",
-            "This email is already in use. Please use a different email."
-          );
-        } else {
-          Alert.alert("Error", error.message);
-        }
+
+
+  const handleSaveProfile = async () => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await setDoc(doc(db, "users", user.uid), {
+        avatar: selectedAvatar,
+        email,
+        location,
+        nickname,
       });
+
+      if (selectedAvatar) {
+        // Save the avatar data to Firebase Storage
+        const avatarRef = ref(storage, `avatars/${user.uid}.jpg`);
+        const avatarIndex = avatars.indexOf(selectedAvatar); // Get index of the selected avatar
+        const avatarPath = `../assets/avatars/avatar${avatarIndex + 1}.jpg`; // Construct the path
+        const response = await fetch(avatarPath);
+        const blob = await response.blob();
+        await uploadBytes(avatarRef, blob);
+
+        // Get the download URL and update the user's profile
+        const avatarUrl = await getDownloadURL(avatarRef);
+        await updateDoc(doc(db, "users", user.uid), {
+          avatar: avatarUrl,
+        });
+      }
+    } catch (error) {
+      console.log("Error:", error);
+      if (error.code === "auth/email-already-in-use") {
+        Alert.alert(
+          "Error",
+          "This email is already in use. Please use a different email."
+        );
+      } else {
+        Alert.alert("Error", error.message);
+      }
+    }
   };
 
-  // const chooseImage = async () => {
-  //   let result = await ImagePicker.launchImageLibraryAsync({
-  //     mediaTypes: ImagePicker.MediaTypeOptions.All,
-  //     allowsEditing: true,
-  //     aspect: [4, 3],
-  //     quality: 1
-  //   });
 
-  //   if (!result.canceled) {
-  //     const { assets } = result;
-  //     const uri = assets[0].uri;
-  //     setAvatar(uri);
+
+
+  // const handleAvatarSelect = (index) => {
+  //   const avatarKeys = Object.keys(avatarUrls);
+  //   const selectedAvatarKey = avatarKeys[index];
+  //   setSelectedAvatar(avatarUrls[selectedAvatarKey]); // Save the URL of the selected avatar
+  //   setIsModalVisible(false);// Save the URL of the selected avatar
+
+  //   // Save avatar URL to Firestore
+  //   const user = auth.currentUser;
+  //   if (user) {
+  //     const userDocRef = doc(db, "users", user.uid);
+  //     setDoc(userDocRef, { avatar: selectedAvatarUrl }, { merge: true });
   //   }
+
+  //   setIsModalVisible(false);
   // };
 
-  // const handleAvatarSelect = (avatar) => {
-  //   setSelectedAvatar(avatar);
+  // const handleAvatarSelect = (index) => {
+  //   const avatarKeys = Object.keys(avatarUrls);
+  //   const selectedAvatarKey = avatarKeys[index];
+  //   const selectedAvatarUrl = avatarUrls[selectedAvatarKey];
+
+  //   setSelectedAvatar(selectedAvatarUrl); // Save the URL of the selected avatar
+
+  //   // Save avatar URL to Firestore
+  //   const user = auth.currentUser;
+  //   if (user) {
+  //     const userDocRef = doc(db, "users", user.uid);
+  //     setDoc(userDocRef, { avatar: selectedAvatarUrl }, { merge: true });
+  //   }
+
   //   setIsModalVisible(false);
-  //   // Update avatar state and Firebase profile
   // };
 
   const handleAvatarSelect = (index) => {
-    const avatarIdentifier = getAvatarIdentifier(index);
-    setSelectedAvatar(avatars[index]); // Directly set the avatar image
-
-    // Save avatarIdentifier to Firebase
-    const user = getAuth().currentUser;
-    if (user) {
-      const userDocRef = doc(getFirestore(), "users", user.uid);
-      setDoc(userDocRef, { avatar: avatarIdentifier }, { merge: true });
-    }
-
+    setSelectedAvatar(avatarUrls[index]); // Save the URL of the selected avatar
     setIsModalVisible(false);
   };
 
@@ -148,15 +176,14 @@ export default function ProfileScreen({ navigation, user }) {
     navigation.goBack();
   };
 
+
   return (
     <View style={styles.container}>
       <AnimatedBackground />
       <View style={styles.frame}>
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Image
-            source={selectedAvatar || defaultAvatar}
-            style={styles.avatar}
-          />
+          <Image source={selectedAvatar ? { uri: selectedAvatar } : defaultAvatar} style={styles.avatar} />
+
         </TouchableOpacity>
         <Modal
           animationType="slide"
@@ -173,7 +200,7 @@ export default function ProfileScreen({ navigation, user }) {
                     key={index}
                     onPress={() => handleAvatarSelect(index)}
                   >
-                    <Image source={item} style={styles.modalAvatar} />
+                    <Image source={avatars[index]} style={styles.modalAvatar} />
                   </TouchableOpacity>
                 )}
                 keyExtractor={(item, index) => index.toString()}
@@ -262,7 +289,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FF5733", // Different color for the "Go Back" button
+    backgroundColor: "#FF5733",
   },
   avatar: {
     width: 90,
@@ -278,18 +305,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: "80%", // Adjust as needed
-    height: "60%", // Adjust as needed
-    backgroundColor: "#f0f0f0", // Greyish background
+    width: "80%",
+    height: "60%",
+    backgroundColor: "#f0f0f0",
     borderRadius: 20,
     padding: 10,
     justifyContent: "center",
