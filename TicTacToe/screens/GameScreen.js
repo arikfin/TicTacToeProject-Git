@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, firebase, getAuth } from "../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -13,16 +13,18 @@ import avatar6 from "../assets/avatars/hipster-male.jpg";
 import avatar7 from "../assets/avatars/white-female.jpg";
 import avatar8 from "../assets/avatars/white-male.jpg";
 
-const avatars = {
-  avatar1,
-  avatar2,
-  avatar3,
-  avatar4,
-  avatar5,
-  avatar6,
-  avatar7,
-  avatar8,
-};
+
+
+const avatarUrls = [
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-female.jpg?alt=media&token=50529a12-7172-47e9-8209-e32e446b9c69',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-male.jpg?alt=media&token=0e6ad8a6-6c30-48d2-aed0-87e83f532f4e',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-female.jpg?alt=media&token=97218cc7-e989-4d15-a49b-0dd00b1a1246',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-male.jpg?alt=media&token=ec758017-d1b7-42f0-a7fa-a67bd6e8532e',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-female.jpg?alt=media&token=e5449abe-038a-4b7f-8883-9822eba8d8f3',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-male.jpg?alt=media&token=1e683a8d-f416-4c05-b091-d61520f189b7',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-female.jpg?alt=media&token=fc7b4b18-2399-43d4-a90e-f547320965c7',
+  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-male.jpg?alt=media&token=6ef9ad2c-dafc-4867-9905-135cb4f9bc09',
+];
 
 export default function GameScreen({ navigation }) {
   const [gameResult, setGameResult] = useState(null);
@@ -41,8 +43,8 @@ export default function GameScreen({ navigation }) {
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          const avatarKey = userData.avatar; // Assuming it's saved as 'avatar1', 'avatar2', etc.
-          setUserAvatar(avatars[avatarKey]); // Set the correct avatar image
+          const avatarUrl = userData.avatar; // Assuming it's saved as 'avatar1', 'avatar2', etc.
+          setUserAvatar({ uri: avatarUrl }); // Set the correct avatar image
         }
       }
     };
@@ -87,9 +89,11 @@ export default function GameScreen({ navigation }) {
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.buttonText}>Sign out</Text>
       </TouchableOpacity>
-
-      {userAvatar && <Image source={userAvatar} style={styles.profilePhoto} />}
-
+      <View style={styles.avatarContainer}>
+        {userAvatar && (
+          <Image source={userAvatar} style={styles.profilePhoto} />
+        )}
+      </View>
       <View style={styles.turnIndicators}>
         <View
           style={[
@@ -222,9 +226,15 @@ const styles = StyleSheet.create({
     minWidth: 80, // Ensures that the frame has a minimum width
     textAlign: "center", // Centers the text
   },
+  avatarContainer: {
+    // additional styling may be required
+    alignSelf: 'center', // Center the avatar horizontally
+  },
   profilePhoto: {
-    width: 50,
-    height: 50,
-    borderRadius: 25, // Space between photo and indicators
+    width: 60, // adjust size as needed
+    height: 60, // adjust size as needed
+    borderRadius: 25, // makes it circular
+    marginBottom: 10, // space between avatar and indicators
+    left: -60
   },
 });
