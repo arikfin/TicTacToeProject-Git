@@ -4,14 +4,6 @@ import { signOut } from "firebase/auth";
 import { auth, firebase, getAuth } from "../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import Board from "../components/Board.js";
-import avatar1 from "../assets/avatars/black-female.jpg";
-import avatar2 from "../assets/avatars/black-male.jpg";
-import avatar3 from "../assets/avatars/blonde-female.jpg";
-import avatar4 from "../assets/avatars/blonde-male.jpg";
-import avatar5 from "../assets/avatars/hipster-female.jpg";
-import avatar6 from "../assets/avatars/hipster-male.jpg";
-import avatar7 from "../assets/avatars/white-female.jpg";
-import avatar8 from "../assets/avatars/white-male.jpg";
 
 
 
@@ -93,6 +85,8 @@ export default function GameScreen({ navigation }) {
         {userAvatar && (
           <Image source={userAvatar} style={styles.profilePhoto} />
         )}
+        <Image source={require('../assets/robot.jpg')} style={styles.robotPhoto} />
+
       </View>
       <View style={styles.turnIndicators}>
         <View
@@ -109,6 +103,7 @@ export default function GameScreen({ navigation }) {
             currentPlayer === "O" ? styles.activeIndicator : {},
           ]}
         >
+
           <Text style={styles.turnText}>O's Turn</Text>
         </View>
       </View>
@@ -227,14 +222,22 @@ const styles = StyleSheet.create({
     textAlign: "center", // Centers the text
   },
   avatarContainer: {
-    // additional styling may be required
-    alignSelf: 'center', // Center the avatar horizontally
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center', // This will ensure vertical alignment is centered
   },
   profilePhoto: {
-    width: 60, // adjust size as needed
-    height: 60, // adjust size as needed
-    borderRadius: 25, // makes it circular
-    marginBottom: 10, // space between avatar and indicators
-    left: -60
+    width: 60,
+    height: 60,
+    borderRadius: 25,
+    marginBottom: 10,
+    marginRight: 30,
+  },
+  robotPhoto: {
+    width: 60,
+    height: 60,
+    borderRadius: 25,
+    marginBottom: 10,
+    marginLeft: 30,
   },
 });
