@@ -2,21 +2,18 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
-  Button,
   StyleSheet,
   Text,
   TouchableOpacity,
   Alert,
   Image,
-  ScrollView,
   Modal,
   FlatList,
 } from "react-native";
 import AnimatedBackground from "../components/AnimatedBackground";
-import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
-import { storage, auth, firebase } from "../firebase";
+import { storage } from "../firebase";
 import defaultAvatar from "../assets/ORF8060.jpg";
 import { onAuthStateChanged } from "firebase/auth";
 import { createUserWithEmailAndPassword, getAuth } from "../firebase.js";
@@ -58,17 +55,13 @@ export default function ProfileScreen({ navigation, user }) {
   const [location, setLocation] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState(null);
   const [userID, setUserID] = useState(user ? user.uid : null);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(null);
-  const [isLoadingAvatar, setIsLoadingAvatar] = useState(false);
 
 
-  const getAvatarIdentifier = (index) => {
-    return `avatar${index + 1}`; // This will give you 'avatar1', 'avatar2', etc.
-  };
+
+
 
   const auth = getAuth();
   const db = getFirestore();
@@ -119,53 +112,17 @@ export default function ProfileScreen({ navigation, user }) {
         });
       }
     } catch (error) {
-      console.log("Error:", error);
       if (error.code === "auth/email-already-in-use") {
         Alert.alert(
           "Error",
           "This email is already in use. Please use a different email."
         );
-      } else {
-        Alert.alert("Error", error.message);
       }
     }
   };
 
 
 
-
-  // const handleAvatarSelect = (index) => {
-  //   const avatarKeys = Object.keys(avatarUrls);
-  //   const selectedAvatarKey = avatarKeys[index];
-  //   setSelectedAvatar(avatarUrls[selectedAvatarKey]); // Save the URL of the selected avatar
-  //   setIsModalVisible(false);// Save the URL of the selected avatar
-
-  //   // Save avatar URL to Firestore
-  //   const user = auth.currentUser;
-  //   if (user) {
-  //     const userDocRef = doc(db, "users", user.uid);
-  //     setDoc(userDocRef, { avatar: selectedAvatarUrl }, { merge: true });
-  //   }
-
-  //   setIsModalVisible(false);
-  // };
-
-  // const handleAvatarSelect = (index) => {
-  //   const avatarKeys = Object.keys(avatarUrls);
-  //   const selectedAvatarKey = avatarKeys[index];
-  //   const selectedAvatarUrl = avatarUrls[selectedAvatarKey];
-
-  //   setSelectedAvatar(selectedAvatarUrl); // Save the URL of the selected avatar
-
-  //   // Save avatar URL to Firestore
-  //   const user = auth.currentUser;
-  //   if (user) {
-  //     const userDocRef = doc(db, "users", user.uid);
-  //     setDoc(userDocRef, { avatar: selectedAvatarUrl }, { merge: true });
-  //   }
-
-  //   setIsModalVisible(false);
-  // };
 
   const handleAvatarSelect = (index) => {
     setSelectedAvatar(avatarUrls[index]); // Save the URL of the selected avatar

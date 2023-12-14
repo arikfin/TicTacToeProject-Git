@@ -72,7 +72,6 @@ export default function GameScreen({ navigation }) {
         {userAvatar && (
           <Image source={userAvatar} style={styles.profilePhoto} />
         )}
-        <Image source={require('../assets/robot.jpg')} style={styles.robotPhoto} />
 
       </View>
       <View style={styles.turnIndicators}>
