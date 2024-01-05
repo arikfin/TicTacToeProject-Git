@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import {View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, Alert, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import AnimatedBackground from '../components/AnimatedBackground.js';
-import { app,signInWithEmailAndPassword,createUserWithEmailAndPassword,getAuth,User,signOut,onAuthStateChanged,auth } from '../firebase.js';
+import { app, signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth, User, signOut, onAuthStateChanged, auth, sendPasswordResetEmail } from '../firebase.js';
 
 
-export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  }) {
+export default function LoginScreen({ onLogin, fontsLoaded, navigation, user }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [userID, setUserID] = useState(user ? user.uid : null);
@@ -13,7 +13,7 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  })
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if(user) { 
+            if (user) {
                 console.log("User is signed in");
                 setUserID(user.uid);
                 navigation.navigate('GameModeSelection');
@@ -24,43 +24,66 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  })
     }, []);
 
     const handleLogin = () => {
-        if(email === '' || password === ''){
-            Alert.alert('Error','Please enter your email and password');
+        if (email === '' || password === '') {
+            Alert.alert('Error', 'Please enter your email and password');
             return;
         }
-    
+
         signInWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
-            const user = userCredential.user;
-            console.log("Logged in user ID:", user.uid);
-            navigation.navigate('GameModeSelection');
-        })
-        .catch((error) => {
-            switch (error.code) {
-                case 'auth/invalid-email':
-                case 'auth/user-not-found':
-                case 'auth/wrong-password':
-                    Alert.alert('Error', 'Invalid email or password. Please try again.');
-                    break;
-                default:
-                    Alert.alert('Error', 'An error occurred. Please try again.');
-                    break;
-            }
-        });
+            .then(userCredential => {
+                const user = userCredential.user;
+                console.log("Logged in user ID:", user.uid);
+                navigation.navigate('GameModeSelection');
+            })
+            .catch((error) => {
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                        Alert.alert('Error', 'Invalid email or password. Please try again.');
+                        break;
+                    default:
+                        Alert.alert('Error', 'An error occurred. Please try again.');
+                        break;
+                }
+            });
     };
 
-      
+    const handleForgotPassword = () => {
+        if (email === '') {
+            Alert.alert('Error', 'Please enter your email');
+            return;
+        }
 
-    return(
+        sendPasswordResetEmail(auth, email)
+            .then(() => {
+                Alert.alert('Success', 'Password reset email sent. Please check your inbox.');
+            })
+            .catch((error) => {
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                    case 'auth/user-not-found':
+                        Alert.alert('Error', 'Invalid email. Please try again.');
+                        break;
+                    default:
+                        Alert.alert('Error', 'An error occurred. Please try again.');
+                        break;
+                }
+            });
+    };
+
+
+
+    return (
         <View style={styles.container}>
-            <AnimatedBackground/>
+            <AnimatedBackground />
             {fontsLoaded && (
                 <View style={styles.headerBackground}>
                     <Text style={styles.header}>Tic Tac Toe</Text>
                     <Text style={styles.header}>Game</Text>
                 </View>
             )}
-            <View style ={styles.frame}>
+            <View style={styles.frame}>
                 <TextInput
                     style={styles.input}
                     placeholder='Email'
@@ -74,15 +97,18 @@ export default function LoginScreen({ onLogin, fontsLoaded, navigation, user  })
                     onChangeText={setPassword}
                     secureTextEntry
                 />
-                <TouchableOpacity 
-                    style={styles.button} 
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                    style={styles.button} 
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={() => navigation.navigate('Register')}>
                     <Text style={styles.buttonText}>Register</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleForgotPassword}>
+                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -93,7 +119,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems:'center',
+        alignItems: 'center',
         backgroundColor: 'white'
     },
     headerBackground: {
@@ -111,23 +137,23 @@ const styles = StyleSheet.create({
         textShadowColor: 'rgba(0, 0, 0, 0.75)',
         textShadowOffset: { width: -1, height: 1 },
         textShadowRadius: 10,
-      },
+    },
     frame: {
         borderWidth: 2,
         borderColor: '#333',
         borderRadius: 10,
         backgroundColor: 'white',
         padding: 16,
-        width : "80%",
+        width: "80%",
         alignItems: 'center',
     },
-    input:{
+    input: {
         width: "100%",
         padding: 10,
         marginVertical: 8,
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius:5
+        borderRadius: 5
     },
     button: {
         width: '100%',
@@ -135,11 +161,14 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         marginVertical: 10,
         justifyContent: 'center',
-        alignItems: 'center',  
-        backgroundColor: '#4CAF50',  
+        alignItems: 'center',
+        backgroundColor: '#4CAF50',
     },
     buttonText: {
-        color: 'white',  
+        color: 'white',
         fontWeight: 'bold'
+    },
+    forgotPasswordText: {
+        marginTop: 15,
     }
 });

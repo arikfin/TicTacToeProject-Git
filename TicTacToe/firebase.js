@@ -6,7 +6,8 @@ import {
   getAuth,
   onAuthStateChanged,
   User,
-  signOut
+  signOut,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
@@ -46,5 +47,6 @@ export {
   onAuthStateChanged,
   auth,
   storage,
-  firestore
+  firestore,
+  sendPasswordResetEmail
 };

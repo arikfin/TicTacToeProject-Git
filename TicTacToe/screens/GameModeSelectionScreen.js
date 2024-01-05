@@ -1,19 +1,41 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator, Button, Modal } from 'react-native';
 import AnimatedBackground from '../components/AnimatedBackground.js';
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { addDoc, collection } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+
+const db = getFirestore();
 
 export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+
+  const createGame = async () => {
+    const newGame = {
+      board: Array(9).fill(null),
+      currentTurn: "X",
+      gameOver: false,
+      winner: null,
+      playerXId: auth.currentUser.uid,
+      draw: false,
+    };
+
+    const docRef = await addDoc(collection(db, "games"), newGame);
+    return docRef.id;
+  };
 
   const handleSinglePlayerPress = () => {
     // Navigate to the single-player game screen
     navigation.navigate('Game');
   };
 
-  const handleMultiplayerPress = () => {
-    // Navigate to the multiplayer setup or game screen
-    navigation.navigate('MultiplayerGame');
+  const handleMultiplayerPress = async () => {
+    setModalVisible(true);
+    const gameId = await createGame();
+    setModalVisible(false);
+    navigation.navigate('MultiplayerGame', { gameId });
   };
 
   const handleSignOut = () => {
@@ -49,6 +71,22 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
           style={[styles.button, { marginTop: 20 }]}>
           <Text style={styles.buttonText}>Online</Text>
         </TouchableOpacity>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          statusBarTranslucent={true}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContent}>
+              <Text>Searching for players...</Text>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          </View>
+        </Modal>
+
+
 
         <TouchableOpacity
           onPress={handleSignOut}
@@ -131,5 +169,16 @@ const styles = StyleSheet.create({
     padding: 16,
     width: "80%",
     alignItems: 'center',
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
   },
 });

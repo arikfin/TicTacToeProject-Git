@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { auth } from "../firebase";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import Board from "../components/Board.js";
+import { checkWinner } from "../components/Board.js";
+import BoardMultiPlayer from "../components/BoardMultiPlayer.js";
 
 
 
-
-export default function GameScreen({ navigation }) {
+export default function MultiplayerGameScreen({ navigation, route }) {
   const [gameResult, setGameResult] = useState(null);
   const [boardKey, setBoardKey] = useState(0);
   const [currentPlayer, setCurrentPlayer] = useState("X");
@@ -15,6 +16,23 @@ export default function GameScreen({ navigation }) {
   const [oWins, setOWins] = useState(0);
   const [draws, setDraws] = useState(0);
   const [userAvatar, setUserAvatar] = useState(null);
+  const { gameId } = route.params;
+  const [board, setBoard] = useState([]);
+  const [draw, setDraw] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [gameState, setGameState] = useState(null);
+
+  useEffect(() => {
+    const db = getFirestore();
+    const gameRef = doc(db, 'games', gameId);
+
+    const unsubscribe = onSnapshot(gameRef, (doc) => {
+      setGameState(doc.data());
+    });
+
+    return unsubscribe;
+  }, [gameId]);
 
   useEffect(() => {
     const fetchUserAvatar = async () => {
@@ -33,34 +51,103 @@ export default function GameScreen({ navigation }) {
     fetchUserAvatar();
   }, []);
 
+  useEffect(() => {
+    const fetchGame = async () => {
+      const db = getFirestore();
+      const gameRef = doc(db, "games", gameId);
+
+      const unsubscribe = onSnapshot(gameRef, (doc) => {
+        const gameData = doc.data();
+        setCurrentPlayer(gameData.currentTurn);
+        setBoard(gameData.board);
+        setDraw(gameData.draw);
+        setGameOver(gameData.gameOver);
+        setWinner(gameData.winner);
+      });
+
+      // Clean up the subscription on unmount
+      return () => unsubscribe();
+    };
+
+    fetchGame();
+  }, [gameId]); // Re-run this effect if the gameId changes
+
+
+  const makeMove = async (index) => {
+    console.log(gameId);
+
+    const db = getFirestore();
+    const gameRef = doc(db, 'games', gameId);
+    const gameSnap = await getDoc(gameRef);
+
+    if (gameSnap.exists()) {
+      const gameState = gameSnap.data();
+
+      // If the game is over, don't make a move
+      if (gameState.gameOver) {
+        return;
+      }
+
+      // Make the move
+      gameState.board[index] = gameState.currentTurn;
+
+      // Check if the game has ended
+      const result = checkWinner(gameState.board, gameState.currentTurn);
+      if (result) {
+        handleGameEnd(gameState.currentTurn);
+      }
+
+      // Switch the current player
+      gameState.currentTurn = gameState.currentTurn === 'X' ? 'O' : 'X';
+
+      // Update the game state in Firestore
+      await updateDoc(gameRef, gameState);
+    } else {
+      console.log('No such document!');
+    }
+  };
+
 
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  const handleGameEnd = (result) => {
+  const handleGameEnd = async (result) => {
+    const db = getFirestore();
+    const gameRef = doc(db, 'games', gameId);
+
     if (result === "X") {
-      setXWins(xWins + 1);
       Alert.alert("Game Over", "X wins!");
     } else if (result === "O") {
-      setOWins(oWins + 1);
       Alert.alert("Game Over", "O wins!");
     } else if (result === "Draw") {
-      setDraws(draws + 1);
       Alert.alert("Game Over", "It's a draw!");
     }
-    setGameResult(result);
+
+    // Update the game result in Firestore
+    await updateDoc(gameRef, { result, gameOver: true });
   };
 
+  const handleRestart = async () => {
+    const db = getFirestore();
+    const gameRef = doc(db, 'games', gameId);
 
-  const handleRestart = () => {
-    setGameResult(null);
-    setBoardKey((prevKey) => prevKey + 1);
+    // Reset the game state in Firestore
+    await updateDoc(gameRef, {
+      board: Array(9).fill(null),
+      currentTurn: 'X',
+      result: null,
+      gameOver: false
+    });
   };
 
-  const handlePlayerChange = (player) => {
-    setCurrentPlayer(player);
+  const handlePlayerChange = async (player) => {
+    const db = getFirestore();
+    const gameRef = doc(db, 'games', gameId);
+
+    // Update the current player in Firestore
+    await updateDoc(gameRef, { currentTurn: player });
   };
 
   return (
@@ -94,10 +181,12 @@ export default function GameScreen({ navigation }) {
         </View>
       </View>
 
-      <Board
+      <BoardMultiPlayer
         key={boardKey}
         onGameEnd={handleGameEnd}
         onPlayerChange={handlePlayerChange}
+        makeMove={makeMove}
+        gameState={gameState}
       />
 
       <View style={styles.scoreBoard}>

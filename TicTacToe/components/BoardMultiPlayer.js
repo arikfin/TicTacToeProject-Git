@@ -28,7 +28,7 @@ export const checkWinner = (board, player) => {
   return null; // No winner
 };
 
-export default function Board({ onGameEnd, onPlayerChange, makeMove, gameState }) {
+export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, gameState }) {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [gameOver, setGameOver] = useState(false);

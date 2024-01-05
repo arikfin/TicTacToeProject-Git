@@ -8,27 +8,10 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export const checkWinner = (board, player) => {
-  const winningCombinations = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8], // rows
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8], // columns
-    [0, 4, 8],
-    [2, 4, 6], // diagonals
-  ];
 
-  for (let combination of winningCombinations) {
-    if (combination.every((index) => board[index] === player)) {
-      return combination; // Return the winning combination
-    }
-  }
-  return null; // No winner
-};
 
-export default function Board({ onGameEnd, onPlayerChange, makeMove, gameState }) {
+
+export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState }) {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [gameOver, setGameOver] = useState(false);
@@ -125,7 +108,24 @@ export default function Board({ onGameEnd, onPlayerChange, makeMove, gameState }
     setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
   };
 
-
+  const checkWinner = (board, player) => {
+    const winningCombinations = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8], // rows
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8], // columns
+      [0, 4, 8],
+      [2, 4, 6], // diagonals
+    ];
+    for (let combination of winningCombinations) {
+      if (combination.every((index) => board[index] === player)) {
+        return combination; // Return the winning combination
+      }
+    }
+    return null; // No winner
+  };
 
   const WinningLine = ({ combination }) => {
     if (!combination) return null;
@@ -210,8 +210,8 @@ export default function Board({ onGameEnd, onPlayerChange, makeMove, gameState }
 
   return (
     <View style={styles.container}>
-      {gameState && gameState.board.map((cell, index) => (
-        <Cell key={index} value={cell} onPress={() => makeMove(index)} />
+      {board.map((cell, index) => (
+        <Cell key={index} value={cell} onPress={() => handlePress(index)} />
       ))}
       <GridLines />
       <WinningLine combination={winningCombination} />

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { auth } from "../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import Board from "../components/Board.js";
-
+import BoardSinglePlayer from "../components/BoardSinglePlayer.js";
 
 
 
@@ -95,7 +94,7 @@ export default function GameScreen({ navigation }) {
         </View>
       </View>
 
-      <Board
+      <BoardSinglePlayer
         key={boardKey}
         onGameEnd={handleGameEnd}
         onPlayerChange={handlePlayerChange}
