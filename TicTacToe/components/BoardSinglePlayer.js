@@ -8,10 +8,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-
-
-
-export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState }) {
+export default function BoardSinglePlayer({
+  onGameEnd,
+  onPlayerChange,
+  gameState,
+}) {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [gameOver, setGameOver] = useState(false);
@@ -19,6 +20,7 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
   const horizontalLineWidth = useSharedValue(0);
   const [winningCombination, setWinningCombination] = useState(null);
 
+  // Use the useEffect hook to animate the lines and call the onPlayerChange function when the current player changes
   useEffect(() => {
     verticalLineHeight.value = withTiming(300, {
       duration: 1000,
@@ -31,6 +33,7 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
     onPlayerChange(currentPlayer);
   }, [currentPlayer]);
 
+  // Define the animated style for the vertical lines
   const verticalAnimatedStyle = useAnimatedStyle(() => {
     return {
       height: verticalLineHeight.value,
@@ -38,6 +41,7 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
     };
   });
 
+  // Define the animated style for the horizontal lines
   const horizontalAnimatedStyle = useAnimatedStyle(() => {
     return {
       width: horizontalLineWidth.value,
@@ -45,6 +49,7 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
     };
   });
 
+  // Define the GridLines component
   const GridLines = () => {
     return (
       <>
@@ -80,18 +85,19 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
     );
   };
 
+  // Define the handlePress function
   const handlePress = (index) => {
-    if (board[index] || gameOver) return;
+    if (board[index] || gameOver) return; // If the cell is already filled or the game is over, do nothing
 
-    const newBoard = board.slice();
-    newBoard[index] = currentPlayer;
-    setBoard(newBoard);
+    const newBoard = board.slice(); // Copy the game board
+    newBoard[index] = currentPlayer; // Set the current cell to the current player
+    setBoard(newBoard); // Update the game board
 
-    const winnerCombination = checkWinner(newBoard, currentPlayer);
+    const winnerCombination = checkWinner(newBoard, currentPlayer); // Check if the current player has won
     if (winnerCombination) {
-      setGameOver(true);
-      setWinningCombination(winnerCombination);
-      onGameEnd(currentPlayer);
+      setGameOver(true); // Set the game to be over
+      setWinningCombination(winnerCombination); // Set the winning combination
+      onGameEnd(currentPlayer); // Call the onGameEnd function with the current player
       return;
     }
 
@@ -105,9 +111,10 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
       return;
     }
 
-    setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
+    setCurrentPlayer(currentPlayer === "X" ? "O" : "X"); // Switch to the other player
   };
 
+  // Define the checkWinner function
   const checkWinner = (board, player) => {
     const winningCombinations = [
       [0, 1, 2],
@@ -119,7 +126,9 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
       [0, 4, 8],
       [2, 4, 6], // diagonals
     ];
+
     for (let combination of winningCombinations) {
+      // If all cells in the combination are filled by the player, return the winning combination
       if (combination.every((index) => board[index] === player)) {
         return combination; // Return the winning combination
       }
@@ -130,13 +139,14 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
   const WinningLine = ({ combination }) => {
     if (!combination) return null;
 
+    // Define the initial style for the winning line
     let lineStyle = {
       position: "absolute",
       backgroundColor: "red",
       height: 2,
     };
 
-    // Horizontal Lines
+    // If the winning combination is a row, adjust the style to draw a horizontal line
     if (
       combination.includes(0) &&
       combination.includes(1) &&
@@ -156,7 +166,7 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
     ) {
       lineStyle = { ...lineStyle, width: 300, top: 250, left: 0 };
     }
-    // Vertical Lines
+    // If the winning combination is a column, adjust the style to draw a vertical line
     else if (
       combination.includes(0) &&
       combination.includes(3) &&
@@ -176,7 +186,7 @@ export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, gameState
     ) {
       lineStyle = { ...lineStyle, width: 2, height: 300, top: 0, left: 250 };
     }
-    // Diagonal Lines
+    // If the winning combination is a diagonal, adjust the style to draw a diagonal line
     else if (
       combination.includes(0) &&
       combination.includes(4) &&

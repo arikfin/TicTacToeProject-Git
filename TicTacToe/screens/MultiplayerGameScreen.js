@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from "react-native";
 import { auth } from "../firebase";
-import { getFirestore, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import Board from "../components/Board.js";
 import { checkWinner } from "../components/Board.js";
 import BoardMultiPlayer from "../components/BoardMultiPlayer.js";
-
-
 
 export default function MultiplayerGameScreen({ navigation, route }) {
   const [gameResult, setGameResult] = useState(null);
@@ -23,9 +34,10 @@ export default function MultiplayerGameScreen({ navigation, route }) {
   const [winner, setWinner] = useState(null);
   const [gameState, setGameState] = useState(null);
 
+  // useEffect hook to fetch the game state from Firestore when the component mounts or when gameId changes
   useEffect(() => {
     const db = getFirestore();
-    const gameRef = doc(db, 'games', gameId);
+    const gameRef = doc(db, "games", gameId);
 
     const unsubscribe = onSnapshot(gameRef, (doc) => {
       setGameState(doc.data());
@@ -34,6 +46,7 @@ export default function MultiplayerGameScreen({ navigation, route }) {
     return unsubscribe;
   }, [gameId]);
 
+  // useEffect hook to fetch the user's avatar when the component mounts
   useEffect(() => {
     const fetchUserAvatar = async () => {
       const user = auth.currentUser;
@@ -51,6 +64,7 @@ export default function MultiplayerGameScreen({ navigation, route }) {
     fetchUserAvatar();
   }, []);
 
+  // useEffect hook to fetch the game state from Firestore when the component mounts or when gameId changes
   useEffect(() => {
     const fetchGame = async () => {
       const db = getFirestore();
@@ -72,12 +86,12 @@ export default function MultiplayerGameScreen({ navigation, route }) {
     fetchGame();
   }, [gameId]); // Re-run this effect if the gameId changes
 
-
+  // Function to make a move in the game
   const makeMove = async (index) => {
     console.log(gameId);
 
     const db = getFirestore();
-    const gameRef = doc(db, 'games', gameId);
+    const gameRef = doc(db, "games", gameId);
     const gameSnap = await getDoc(gameRef);
 
     if (gameSnap.exists()) {
@@ -98,24 +112,23 @@ export default function MultiplayerGameScreen({ navigation, route }) {
       }
 
       // Switch the current player
-      gameState.currentTurn = gameState.currentTurn === 'X' ? 'O' : 'X';
+      gameState.currentTurn = gameState.currentTurn === "X" ? "O" : "X";
 
       // Update the game state in Firestore
       await updateDoc(gameRef, gameState);
     } else {
-      console.log('No such document!');
+      console.log("No such document!");
     }
   };
-
-
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
+  // Function to handle the end of the game
   const handleGameEnd = async (result) => {
     const db = getFirestore();
-    const gameRef = doc(db, 'games', gameId);
+    const gameRef = doc(db, "games", gameId);
 
     if (result === "X") {
       Alert.alert("Game Over", "X wins!");
@@ -129,22 +142,24 @@ export default function MultiplayerGameScreen({ navigation, route }) {
     await updateDoc(gameRef, { result, gameOver: true });
   };
 
+  // Function to handle restarting the game
   const handleRestart = async () => {
     const db = getFirestore();
-    const gameRef = doc(db, 'games', gameId);
+    const gameRef = doc(db, "games", gameId);
 
     // Reset the game state in Firestore
     await updateDoc(gameRef, {
       board: Array(9).fill(null),
-      currentTurn: 'X',
+      currentTurn: "X",
       result: null,
-      gameOver: false
+      gameOver: false,
     });
   };
 
+  // Function to handle changing the current player
   const handlePlayerChange = async (player) => {
     const db = getFirestore();
-    const gameRef = doc(db, 'games', gameId);
+    const gameRef = doc(db, "games", gameId);
 
     // Update the current player in Firestore
     await updateDoc(gameRef, { currentTurn: player });
@@ -159,7 +174,6 @@ export default function MultiplayerGameScreen({ navigation, route }) {
         {userAvatar && (
           <Image source={userAvatar} style={styles.profilePhoto} />
         )}
-
       </View>
       <View style={styles.turnIndicators}>
         <View
@@ -176,7 +190,6 @@ export default function MultiplayerGameScreen({ navigation, route }) {
             currentPlayer === "O" ? styles.activeIndicator : {},
           ]}
         >
-
           <Text style={styles.turnText}>O's Turn</Text>
         </View>
       </View>
@@ -297,9 +310,9 @@ const styles = StyleSheet.create({
     textAlign: "center", // Centers the text
   },
   avatarContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center', // This will ensure vertical alignment is centered
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center", // This will ensure vertical alignment is centered
   },
   profilePhoto: {
     width: 60,

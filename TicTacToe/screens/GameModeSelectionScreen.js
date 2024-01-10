@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator, Button, Modal } from 'react-native';
-import AnimatedBackground from '../components/AnimatedBackground.js';
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  Button,
+  Modal,
+} from "react-native";
+import AnimatedBackground from "../components/AnimatedBackground.js";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { addDoc, collection } from "firebase/firestore";
@@ -11,7 +19,7 @@ const db = getFirestore();
 export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
 
-
+  // Function to create a new game
   const createGame = async () => {
     const newGame = {
       board: Array(9).fill(null),
@@ -21,23 +29,25 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
       playerXId: auth.currentUser.uid,
       draw: false,
     };
-
+    // Add the new game to the 'games' collection in Firestore
     const docRef = await addDoc(collection(db, "games"), newGame);
     return docRef.id;
   };
-
+  // Function to handle pressing the single-player button
   const handleSinglePlayerPress = () => {
     // Navigate to the single-player game screen
-    navigation.navigate('Game');
+    navigation.navigate("Game");
   };
 
+  // Function to handle pressing the multiplayer button
   const handleMultiplayerPress = async () => {
     setModalVisible(true);
     const gameId = await createGame();
     setModalVisible(false);
-    navigation.navigate('MultiplayerGame', { gameId });
+    navigation.navigate("MultiplayerGame", { gameId });
   };
 
+  // Function to handle signing out
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -46,7 +56,6 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
       })
       .catch((error) => console.log("Error signing out:", error));
   };
-
 
   return (
     <View style={styles.container}>
@@ -57,18 +66,17 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
         </View>
       )}
       <View style={styles.frame}>
-
         <TouchableOpacity
           onPress={handleSinglePlayerPress}
-          style={styles.button}>
+          style={styles.button}
+        >
           <Text style={styles.buttonText}>On Phone</Text>
         </TouchableOpacity>
 
-
-
         <TouchableOpacity
           onPress={handleMultiplayerPress}
-          style={[styles.button, { marginTop: 20 }]}>
+          style={[styles.button, { marginTop: 20 }]}
+        >
           <Text style={styles.buttonText}>Online</Text>
         </TouchableOpacity>
 
@@ -86,17 +94,13 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
           </View>
         </Modal>
 
-
-
         <TouchableOpacity
           onPress={handleSignOut}
-          style={[styles.signOutButton, { marginTop: 20 }]}>
+          style={[styles.signOutButton, { marginTop: 20 }]}
+        >
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
-
-
       </View>
-
     </View>
   );
 }
@@ -104,12 +108,12 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#292929',  // Dark background color
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#292929", // Dark background color
   },
   headerBackground: {
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
     borderRadius: 10,
     padding: 10,
     marginBottom: 20,
@@ -117,20 +121,20 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 40,
     marginBottom: 20,
-    fontFamily: 'Righteous_400Regular',
-    color: '#FFBC42',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    fontFamily: "Righteous_400Regular",
+    color: "#FFBC42",
+    textAlign: "center",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
   },
   button: {
-    width: '70%',
+    width: "70%",
     height: 60,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#4CAF50",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -141,12 +145,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   signOutButton: {
-    width: '50%',
+    width: "50%",
     height: 60,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FF6347',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FF6347",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -157,27 +161,27 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold'
+    fontWeight: "bold",
   },
   frame: {
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: "#333",
     borderRadius: 10,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 16,
     width: "80%",
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalBackground: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
   },

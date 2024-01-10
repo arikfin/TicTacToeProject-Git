@@ -38,19 +38,17 @@ const avatars = [
 ];
 
 const avatarUrls = [
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-female.jpg?alt=media&token=50529a12-7172-47e9-8209-e32e446b9c69',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-male.jpg?alt=media&token=0e6ad8a6-6c30-48d2-aed0-87e83f532f4e',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-female.jpg?alt=media&token=97218cc7-e989-4d15-a49b-0dd00b1a1246',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-male.jpg?alt=media&token=ec758017-d1b7-42f0-a7fa-a67bd6e8532e',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-female.jpg?alt=media&token=e5449abe-038a-4b7f-8883-9822eba8d8f3',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-male.jpg?alt=media&token=1e683a8d-f416-4c05-b091-d61520f189b7',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-female.jpg?alt=media&token=fc7b4b18-2399-43d4-a90e-f547320965c7',
-  'https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-male.jpg?alt=media&token=6ef9ad2c-dafc-4867-9905-135cb4f9bc09',
-]
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-female.jpg?alt=media&token=50529a12-7172-47e9-8209-e32e446b9c69",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-male.jpg?alt=media&token=0e6ad8a6-6c30-48d2-aed0-87e83f532f4e",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-female.jpg?alt=media&token=97218cc7-e989-4d15-a49b-0dd00b1a1246",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblonde-male.jpg?alt=media&token=ec758017-d1b7-42f0-a7fa-a67bd6e8532e",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-female.jpg?alt=media&token=e5449abe-038a-4b7f-8883-9822eba8d8f3",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fhipster-male.jpg?alt=media&token=1e683a8d-f416-4c05-b091-d61520f189b7",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-female.jpg?alt=media&token=fc7b4b18-2399-43d4-a90e-f547320965c7",
+  "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fwhite-male.jpg?alt=media&token=6ef9ad2c-dafc-4867-9905-135cb4f9bc09",
+];
 
 export default function ProfileScreen({ navigation, user }) {
-
-
   const [nickname, setNickname] = useState("");
   const [location, setLocation] = useState("");
   const [email, setEmail] = useState("");
@@ -59,15 +57,11 @@ export default function ProfileScreen({ navigation, user }) {
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-
-
-
-
+  // Getting the auth object and Firestore database reference from Firebase
   const auth = getAuth();
   const db = getFirestore();
 
-
-
+  // useEffect hook to handle user state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
       if (user) {
@@ -82,12 +76,14 @@ export default function ProfileScreen({ navigation, user }) {
     return unsubscribe;
   }, []);
 
-
-
-
+  // Function to handle saving the profile
   const handleSaveProfile = async () => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
       await setDoc(doc(db, "users", user.uid), {
         avatar: selectedAvatar,
@@ -121,26 +117,26 @@ export default function ProfileScreen({ navigation, user }) {
     }
   };
 
-
-
-
+  // Function to handle avatar selection
   const handleAvatarSelect = (index) => {
     setSelectedAvatar(avatarUrls[index]); // Save the URL of the selected avatar
     setIsModalVisible(false);
   };
 
+  // Function to handle going back
   const handleGoBack = () => {
     navigation.goBack();
   };
-
 
   return (
     <View style={styles.container}>
       <AnimatedBackground />
       <View style={styles.frame}>
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Image source={selectedAvatar ? { uri: selectedAvatar } : defaultAvatar} style={styles.avatar} />
-
+          <Image
+            source={selectedAvatar ? { uri: selectedAvatar } : defaultAvatar}
+            style={styles.avatar}
+          />
         </TouchableOpacity>
         <Modal
           animationType="slide"

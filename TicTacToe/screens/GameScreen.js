@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from "react-native";
 import { auth } from "../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import BoardSinglePlayer from "../components/BoardSinglePlayer.js";
-
-
 
 export default function GameScreen({ navigation }) {
   const [gameResult, setGameResult] = useState(null);
@@ -15,6 +20,7 @@ export default function GameScreen({ navigation }) {
   const [draws, setDraws] = useState(0);
   const [userAvatar, setUserAvatar] = useState(null);
 
+  // useEffect hook to fetch the user's avatar when the component mounts
   useEffect(() => {
     const fetchUserAvatar = async () => {
       const user = auth.currentUser;
@@ -32,12 +38,11 @@ export default function GameScreen({ navigation }) {
     fetchUserAvatar();
   }, []);
 
-
-
   const handleGoBack = () => {
     navigation.goBack();
   };
 
+  // Function to handle the end of the game
   const handleGameEnd = (result) => {
     if (result === "X") {
       setXWins(xWins + 1);
@@ -52,12 +57,13 @@ export default function GameScreen({ navigation }) {
     setGameResult(result);
   };
 
-
+  // Function to handle restarting the game
   const handleRestart = () => {
     setGameResult(null);
     setBoardKey((prevKey) => prevKey + 1);
   };
 
+  // Function to handle changing the current player
   const handlePlayerChange = (player) => {
     setCurrentPlayer(player);
   };
@@ -71,8 +77,10 @@ export default function GameScreen({ navigation }) {
         {userAvatar && (
           <Image source={userAvatar} style={styles.profilePhoto} />
         )}
-        <Image source={require('../assets/robot.jpg')} style={styles.robotPhoto} />
-
+        <Image
+          source={require("../assets/robot.jpg")}
+          style={styles.robotPhoto}
+        />
       </View>
       <View style={styles.turnIndicators}>
         <View
@@ -89,7 +97,6 @@ export default function GameScreen({ navigation }) {
             currentPlayer === "O" ? styles.activeIndicator : {},
           ]}
         >
-
           <Text style={styles.turnText}>O's Turn</Text>
         </View>
       </View>
@@ -208,9 +215,9 @@ const styles = StyleSheet.create({
     textAlign: "center", // Centers the text
   },
   avatarContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center', // This will ensure vertical alignment is centered
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center", // This will ensure vertical alignment is centered
   },
   profilePhoto: {
     width: 60,

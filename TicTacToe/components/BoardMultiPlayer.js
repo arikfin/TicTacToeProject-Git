@@ -28,7 +28,12 @@ export const checkWinner = (board, player) => {
   return null; // No winner
 };
 
-export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, gameState }) {
+export default function BoardMultiPlayer({
+  onGameEnd,
+  onPlayerChange,
+  makeMove,
+  gameState,
+}) {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [gameOver, setGameOver] = useState(false);
@@ -36,7 +41,9 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
   const horizontalLineWidth = useSharedValue(0);
   const [winningCombination, setWinningCombination] = useState(null);
 
+  // Define the side effect for when the current player changes
   useEffect(() => {
+    // Animate the vertical and horizontal lines
     verticalLineHeight.value = withTiming(300, {
       duration: 1000,
       easing: Easing.linear,
@@ -48,6 +55,7 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
     onPlayerChange(currentPlayer);
   }, [currentPlayer]);
 
+  // Define the animated style for the vertical lines
   const verticalAnimatedStyle = useAnimatedStyle(() => {
     return {
       height: verticalLineHeight.value,
@@ -55,6 +63,7 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
     };
   });
 
+  // Define the animated style for the horizontal lines
   const horizontalAnimatedStyle = useAnimatedStyle(() => {
     return {
       width: horizontalLineWidth.value,
@@ -62,6 +71,7 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
     };
   });
 
+  // Define the GridLines component
   const GridLines = () => {
     return (
       <>
@@ -98,12 +108,15 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
   };
 
   const handlePress = (index) => {
+    // If the cell at the given index is already filled or the game is over, return
     if (board[index] || gameOver) return;
 
+    // Create a new board by copying the current board
     const newBoard = board.slice();
     newBoard[index] = currentPlayer;
     setBoard(newBoard);
 
+    // Check if the current player has won
     const winnerCombination = checkWinner(newBoard, currentPlayer);
     if (winnerCombination) {
       setGameOver(true);
@@ -112,6 +125,7 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
       return;
     }
 
+    // Check again if the current player has won
     if (checkWinner(newBoard, currentPlayer)) {
       setGameOver(true);
       onGameEnd(currentPlayer);
@@ -124,8 +138,6 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
 
     setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
   };
-
-
 
   const WinningLine = ({ combination }) => {
     if (!combination) return null;
@@ -210,9 +222,10 @@ export default function BoardMultiPlayer({ onGameEnd, onPlayerChange, makeMove, 
 
   return (
     <View style={styles.container}>
-      {gameState && gameState.board.map((cell, index) => (
-        <Cell key={index} value={cell} onPress={() => makeMove(index)} />
-      ))}
+      {gameState &&
+        gameState.board.map((cell, index) => (
+          <Cell key={index} value={cell} onPress={() => makeMove(index)} />
+        ))}
       <GridLines />
       <WinningLine combination={winningCombination} />
     </View>
