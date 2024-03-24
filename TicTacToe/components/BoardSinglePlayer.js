@@ -1,18 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import Cell from "./Cell";
-import Animated, {
-  Easing,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 
-export default function BoardSinglePlayer({
-  onGameEnd,
-  onPlayerChange,
-  gameState,
-}) {
+export default function BoardSinglePlayer({ onGameEnd, onPlayerChange, }) {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [gameOver, setGameOver] = useState(false);
@@ -22,65 +13,29 @@ export default function BoardSinglePlayer({
 
   // Use the useEffect hook to animate the lines and call the onPlayerChange function when the current player changes
   useEffect(() => {
-    verticalLineHeight.value = withTiming(300, {
-      duration: 1000,
-      easing: Easing.linear,
-    });
-    horizontalLineWidth.value = withTiming(300, {
-      duration: 1000,
-      easing: Easing.linear,
-    });
+    verticalLineHeight.value = withTiming(300, { duration: 1000, easing: Easing.linear });
+    horizontalLineWidth.value = withTiming(300, { duration: 1000, easing: Easing.linear });
     onPlayerChange(currentPlayer);
   }, [currentPlayer]);
 
   // Define the animated style for the vertical lines
   const verticalAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      height: verticalLineHeight.value,
-      top: 300 - verticalLineHeight.value,
-    };
+    return { height: verticalLineHeight.value, top: 300 - verticalLineHeight.value };
   });
 
   // Define the animated style for the horizontal lines
   const horizontalAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      width: horizontalLineWidth.value,
-      left: 0,
-    };
+    return { width: horizontalLineWidth.value, left: 0 };
   });
 
   // Define the GridLines component
   const GridLines = () => {
     return (
       <>
-        <Animated.View
-          style={[
-            styles.line,
-            { width: 2, height: 300, left: 100 },
-            verticalAnimatedStyle,
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.line,
-            { width: 2, height: 300, left: 200 },
-            verticalAnimatedStyle,
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.line,
-            { width: 300, height: 2, top: 100 },
-            horizontalAnimatedStyle,
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.line,
-            { width: 300, height: 2, top: 200 },
-            horizontalAnimatedStyle,
-          ]}
-        />
+        <Animated.View style={[styles.line, { width: 2, height: 300, left: 100 }, verticalAnimatedStyle]} />
+        <Animated.View style={[styles.line, { width: 2, height: 300, left: 200 }, verticalAnimatedStyle]} />
+        <Animated.View style={[styles.line, { width: 300, height: 2, top: 100 }, horizontalAnimatedStyle]} />
+        <Animated.View style={[styles.line, { width: 300, height: 2, top: 200 }, horizontalAnimatedStyle]} />
       </>
     );
   };
@@ -192,27 +147,13 @@ export default function BoardSinglePlayer({
       combination.includes(4) &&
       combination.includes(8)
     ) {
-      lineStyle = {
-        ...lineStyle,
-        width: 2,
-        height: 416,
-        top: -58,
-        left: 149,
-        transform: [{ rotate: "-45deg" }],
-      };
+      lineStyle = { ...lineStyle, width: 2, height: 416, top: -58, left: 149, transform: [{ rotate: "-45deg" }] };
     } else if (
       combination.includes(2) &&
       combination.includes(4) &&
       combination.includes(6)
     ) {
-      lineStyle = {
-        ...lineStyle,
-        width: 2,
-        height: 416,
-        top: -58,
-        left: 149,
-        transform: [{ rotate: "45deg" }],
-      };
+      lineStyle = { ...lineStyle, width: 2, height: 416, top: -58, left: 149, transform: [{ rotate: "45deg" }] };
     }
 
     return <View style={lineStyle} />;

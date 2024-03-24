@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 export default function Cell({ value, onPress }) {
+
+  useEffect(() => {
+    console.log('Cell re-rendered with value:', value);
+  }, [value]);
+
   let iconName = "";
-  let iconColor = "#7DBBC3"; // Adjust color as needed
+  let iconColor = "#7DBBC3";
 
   if (value === "X") {
     iconName = "times";
@@ -27,3 +32,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+

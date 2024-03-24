@@ -1,52 +1,144 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Image,
-} from "react-native";
-import { auth } from "../firebase";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  onSnapshot,
-  updateDoc,
-} from "firebase/firestore";
-import Board from "../components/Board.js";
-import { checkWinner } from "../components/Board.js";
-import BoardMultiPlayer from "../components/BoardMultiPlayer.js";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import Cell from "../components/Cell";
+import { auth, firestore } from "../firebase";
+import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
 
-export default function MultiplayerGameScreen({ navigation, route }) {
+export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user }) {
+  const [board, setBoard] = useState(Array(9).fill(null));
+  const [currentPlayer, setCurrentPlayer] = useState("X");
+  const [gameOver, setGameOver] = useState(false);
+  const verticalLineHeight = useSharedValue(0);
+  const horizontalLineWidth = useSharedValue(0);
+  const [winningCombination, setWinningCombination] = useState(null);
+
   const [gameResult, setGameResult] = useState(null);
   const [boardKey, setBoardKey] = useState(0);
-  const [currentPlayer, setCurrentPlayer] = useState("X");
   const [xWins, setXWins] = useState(0);
   const [oWins, setOWins] = useState(0);
   const [draws, setDraws] = useState(0);
   const [userAvatar, setUserAvatar] = useState(null);
-  const { gameId } = route.params;
-  const [board, setBoard] = useState([]);
-  const [draw, setDraw] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [winner, setWinner] = useState(null);
-  const [gameState, setGameState] = useState(null);
+  const [gameDocRef, setGameDocRef] = useState(null);
 
-  // useEffect hook to fetch the game state from Firestore when the component mounts or when gameId changes
-  useEffect(() => {
-    const db = getFirestore();
-    const gameRef = doc(db, "games", gameId);
 
-    const unsubscribe = onSnapshot(gameRef, (doc) => {
-      setGameState(doc.data());
+  const startNewGame = async (playerId) => {
+    // Get a reference to the games collection
+    const gamesRef = firestore.collection('games');
+
+    // Create a new game document with the initial game state
+    const docRef = await gamesRef.add({
+      board: Array(9).fill(null),
+      currentTurn: "X",
+      draw: false,
+      gameOver: false,
+      playerId: playerId,
+      winner: null
     });
 
-    return unsubscribe;
-  }, [gameId]);
+    console.log("New game created with ID: ", docRef.id);
 
-  // useEffect hook to fetch the user's avatar when the component mounts
+    // Save the game document reference
+    setGameDocRef(docRef);
+    console.log("After setGameDocRef: ", gameDocRef);
+
+    // Set up the listener for changes to the game document
+    const unsubscribe = docRef.onSnapshot((doc) => {
+      if (doc.exists) {
+        // Update the game state with the data from Firestore
+        const data = doc.data();
+        setBoard(data.board);
+        setCurrentPlayer(data.currentTurn);
+        setGameOver(data.gameOver);
+        // ... update other state variables as needed
+      } else {
+        console.log("No such document!");
+      }
+    });
+
+    // Return a cleanup function to unsubscribe from the listener
+    return unsubscribe;
+  };
+
+
+  useEffect(() => {
+    let unsubscribe = () => { };
+
+    if (gameDocRef && user && user.uid) {
+      unsubscribe = startNewGame(user.uid);
+    }
+
+    return unsubscribe; // Clean up the listener when the component unmounts or gameDocRef/user changes
+  }, [gameDocRef, user]);
+
+
+
+  // useEffect(() => {
+  //   if (user && user.uid) {
+  //     startNewGame(user.uid).then((docRef) => {
+  //       setGameDocRef(docRef);
+  //     });
+  //   }
+  // }, [user]);
+
+
+  const initializeGameDocRef = async () => {
+    console.log('initializeGameDocRef called');
+    if (user && user.uid) {
+      console.log('user.uid:', user.uid);
+      const docRef = await startNewGame(user.uid);
+      setGameDocRef(docRef);
+      console.log('gameDocRef set:', gameDocRef);
+    } else {
+      console.log('user or user.uid is not available');
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('User signed in:', user);
+        setUser(user);
+        initializeGameDocRef();
+      } else {
+        console.log('No user signed in');
+      }
+    });
+
+    return unsubscribe; // Unsubscribe from the listener when the component unmounts
+  }, []);
+
+
+
+
+  // useEffect(() => {
+  //   console.log('Component mounted, user:', user);
+  //   initializeGameDocRef();
+  // }, []);
+
+
+
+  // Fetch the game ID from Firestore when the component mounts
+  useEffect(() => {
+    const fetchGameId = async () => {
+      // Replace with your actual Firestore query
+      const db = getFirestore();
+      const gameRef = doc(db, "games");
+      const gameDoc = await getDoc(gameRef);
+      setGameId(gameDoc.id);
+    };
+
+    fetchGameId();
+  }, []);
+
+
+  // Use the useEffect hook to animate the lines and call the onPlayerChange function when the current player changes
+  useEffect(() => {
+    verticalLineHeight.value = withTiming(300, { duration: 1000, easing: Easing.linear });
+    horizontalLineWidth.value = withTiming(300, { duration: 1000, easing: Easing.linear });
+  }, [currentPlayer]);
+
+
   useEffect(() => {
     const fetchUserAvatar = async () => {
       const user = auth.currentUser;
@@ -64,109 +156,211 @@ export default function MultiplayerGameScreen({ navigation, route }) {
     fetchUserAvatar();
   }, []);
 
-  // useEffect hook to fetch the game state from Firestore when the component mounts or when gameId changes
-  useEffect(() => {
-    const fetchGame = async () => {
-      const db = getFirestore();
-      const gameRef = doc(db, "games", gameId);
-
-      const unsubscribe = onSnapshot(gameRef, (doc) => {
-        const gameData = doc.data();
-        setCurrentPlayer(gameData.currentTurn);
-        setBoard(gameData.board);
-        setDraw(gameData.draw);
-        setGameOver(gameData.gameOver);
-        setWinner(gameData.winner);
-      });
-
-      // Clean up the subscription on unmount
-      return () => unsubscribe();
-    };
-
-    fetchGame();
-  }, [gameId]); // Re-run this effect if the gameId changes
-
-  // Function to make a move in the game
-  const makeMove = async (index) => {
-    console.log(gameId);
-
-    const db = getFirestore();
-    const gameRef = doc(db, "games", gameId);
-    const gameSnap = await getDoc(gameRef);
-
-    if (gameSnap.exists()) {
-      const gameState = gameSnap.data();
-
-      // If the game is over, don't make a move
-      if (gameState.gameOver) {
-        return;
-      }
-
-      // Make the move
-      gameState.board[index] = gameState.currentTurn;
-
-      // Check if the game has ended
-      const result = checkWinner(gameState.board, gameState.currentTurn);
-      if (result) {
-        handleGameEnd(gameState.currentTurn);
-      }
-
-      // Switch the current player
-      gameState.currentTurn = gameState.currentTurn === "X" ? "O" : "X";
-
-      // Update the game state in Firestore
-      await updateDoc(gameRef, gameState);
-    } else {
-      console.log("No such document!");
-    }
-  };
-
+  // Function to handle going back
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  // Function to handle the end of the game
-  const handleGameEnd = async (result) => {
-    const db = getFirestore();
-    const gameRef = doc(db, "games", gameId);
 
+  const handleGameEnd = (result) => {
     if (result === "X") {
+      setXWins(xWins + 1);
       Alert.alert("Game Over", "X wins!");
     } else if (result === "O") {
+      setOWins(oWins + 1);
       Alert.alert("Game Over", "O wins!");
     } else if (result === "Draw") {
+      setDraws(draws + 1);
       Alert.alert("Game Over", "It's a draw!");
     }
-
-    // Update the game result in Firestore
-    await updateDoc(gameRef, { result, gameOver: true });
+    setGameResult(result);
   };
 
   // Function to handle restarting the game
-  const handleRestart = async () => {
-    const db = getFirestore();
-    const gameRef = doc(db, "games", gameId);
-
-    // Reset the game state in Firestore
-    await updateDoc(gameRef, {
-      board: Array(9).fill(null),
-      currentTurn: "X",
-      result: null,
-      gameOver: false,
-    });
+  const handleRestart = () => {
+    setBoard(Array(9).fill(null)); // Reset the game board
+    setCurrentPlayer("X"); // Reset the current player to "X"
+    setGameOver(false); // Reset the game over state
+    setWinningCombination(null); // Reset the winning combination
+    setGameResult(null); // Reset the game result
+    setBoardKey((prevKey) => prevKey + 1); // Increment the board key to force a re-render of the board
   };
 
   // Function to handle changing the current player
-  const handlePlayerChange = async (player) => {
-    const db = getFirestore();
-    const gameRef = doc(db, "games", gameId);
-
-    // Update the current player in Firestore
-    await updateDoc(gameRef, { currentTurn: player });
+  const handlePlayerChange = (player) => {
+    setCurrentPlayer(player);
   };
+
+
+  // Define the animated style for the vertical lines
+  const verticalAnimatedStyle = useAnimatedStyle(() => {
+    return { height: verticalLineHeight.value, top: 300 - verticalLineHeight.value };
+  });
+
+  // Define the animated style for the horizontal lines
+  const horizontalAnimatedStyle = useAnimatedStyle(() => {
+    return { width: horizontalLineWidth.value, left: 0 };
+  });
+
+  // Define the GridLines component
+  const GridLines = () => {
+    return (
+      <>
+        <Animated.View style={[styles.line, { width: 2, height: 300, left: 100 }, verticalAnimatedStyle]} />
+        <Animated.View style={[styles.line, { width: 2, height: 300, left: 200 }, verticalAnimatedStyle]} />
+        <Animated.View style={[styles.line, { width: 300, height: 2, top: 100 }, horizontalAnimatedStyle]} />
+        <Animated.View style={[styles.line, { width: 300, height: 2, top: 200 }, horizontalAnimatedStyle]} />
+      </>
+    );
+  };
+
+  // Define the handlePress function
+  const handlePress = async (index) => {
+    console.log('handlePress called');
+
+    while (!gameDocRef) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    if (!gameDocRef) {
+      console.log("Game document reference not available. Cannot handle press.");
+      return; // Exit the function early if gameDocRef is not available
+    }
+
+
+    if (board[index] || gameOver) return; // If the cell is already filled or the game is over, do nothing
+
+    const newBoard = board.slice(); // Copy the game board
+    newBoard[index] = currentPlayer; // Set the current cell to the current player
+    console.log('newBoard:', newBoard); // Log the newBoard value
+    setBoard(newBoard); // Update the game board
+
+    const winnerCombination = checkWinner(newBoard, currentPlayer); // Check if the current player has won
+    let newGameOver = gameOver;
+    let newCurrentPlayer = currentPlayer;
+
+    if (winnerCombination) {
+      newGameOver = true; // Set the game to be over
+      setGameOver(true);
+      setWinningCombination(winnerCombination); // Set the winning combination
+      handleGameEnd(currentPlayer); // Call the onGameEnd function with the current player
+    } else if (newBoard.every((cell) => cell)) {
+      newGameOver = true;
+      setGameOver(true);
+      handleGameEnd("Draw");
+    } else {
+      newCurrentPlayer = currentPlayer === "X" ? "O" : "X"; // Switch to the other player
+      setCurrentPlayer(newCurrentPlayer);
+    }
+
+
+
+    // Update the game document in Firestore
+    await updateDoc(gameDocRef, {
+      board: newBoard,
+      currentTurn: newCurrentPlayer,
+      gameOver: newGameOver,
+      winner: winnerCombination ? currentPlayer : null,
+    });
+
+  };
+
+
+  // Define the checkWinner function
+  const checkWinner = (board, player) => {
+    const winningCombinations = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8], // rows
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8], // columns
+      [0, 4, 8],
+      [2, 4, 6], // diagonals
+    ];
+
+    for (let combination of winningCombinations) {
+      // If all cells in the combination are filled by the player, return the winning combination
+      if (combination.every((index) => board[index] === player)) {
+        return combination; // Return the winning combination
+      }
+    }
+    return null; // No winner
+  };
+
+  const WinningLine = ({ combination }) => {
+    if (!combination) return null;
+
+    // Define the initial style for the winning line
+    let lineStyle = {
+      position: "absolute",
+      backgroundColor: "red",
+      height: 2,
+    };
+
+    // If the winning combination is a row, adjust the style to draw a horizontal line
+    if (
+      combination.includes(0) &&
+      combination.includes(1) &&
+      combination.includes(2)
+    ) {
+      lineStyle = { ...lineStyle, width: 300, top: 50, left: 0 };
+    } else if (
+      combination.includes(3) &&
+      combination.includes(4) &&
+      combination.includes(5)
+    ) {
+      lineStyle = { ...lineStyle, width: 300, top: 150, left: 0 };
+    } else if (
+      combination.includes(6) &&
+      combination.includes(7) &&
+      combination.includes(8)
+    ) {
+      lineStyle = { ...lineStyle, width: 300, top: 250, left: 0 };
+    }
+    // If the winning combination is a column, adjust the style to draw a vertical line
+    else if (
+      combination.includes(0) &&
+      combination.includes(3) &&
+      combination.includes(6)
+    ) {
+      lineStyle = { ...lineStyle, width: 2, height: 300, top: 0, left: 50 };
+    } else if (
+      combination.includes(1) &&
+      combination.includes(4) &&
+      combination.includes(7)
+    ) {
+      lineStyle = { ...lineStyle, width: 2, height: 300, top: 0, left: 150 };
+    } else if (
+      combination.includes(2) &&
+      combination.includes(5) &&
+      combination.includes(8)
+    ) {
+      lineStyle = { ...lineStyle, width: 2, height: 300, top: 0, left: 250 };
+    }
+    // If the winning combination is a diagonal, adjust the style to draw a diagonal line
+    else if (
+      combination.includes(0) &&
+      combination.includes(4) &&
+      combination.includes(8)
+    ) {
+      lineStyle = { ...lineStyle, width: 2, height: 416, top: -58, left: 149, transform: [{ rotate: "-45deg" }] };
+    } else if (
+      combination.includes(2) &&
+      combination.includes(4) &&
+      combination.includes(6)
+    ) {
+      lineStyle = { ...lineStyle, width: 2, height: 416, top: -58, left: 149, transform: [{ rotate: "45deg" }] };
+    }
+
+    return <View style={lineStyle} />;
+  };
+
+
 
   return (
     <View style={styles.container}>
+
       <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
         <Text style={styles.buttonText}>Go Back</Text>
       </TouchableOpacity>
@@ -174,33 +368,28 @@ export default function MultiplayerGameScreen({ navigation, route }) {
         {userAvatar && (
           <Image source={userAvatar} style={styles.profilePhoto} />
         )}
+        <Image source={require("../assets/robot.jpg")} style={styles.robotPhoto} />
       </View>
       <View style={styles.turnIndicators}>
-        <View
-          style={[
-            styles.turnIndicator,
-            currentPlayer === "X" ? styles.activeIndicator : {},
-          ]}
-        >
+        <View style={[styles.turnIndicator, currentPlayer === "X" ? styles.activeIndicator : {},]}>
           <Text style={styles.turnText}>X's Turn</Text>
         </View>
-        <View
-          style={[
-            styles.turnIndicator,
-            currentPlayer === "O" ? styles.activeIndicator : {},
-          ]}
-        >
+        <View style={[styles.turnIndicator, currentPlayer === "O" ? styles.activeIndicator : {},]}>
           <Text style={styles.turnText}>O's Turn</Text>
         </View>
       </View>
 
-      <BoardMultiPlayer
-        key={boardKey}
-        onGameEnd={handleGameEnd}
-        onPlayerChange={handlePlayerChange}
-        makeMove={makeMove}
-        gameState={gameState}
-      />
+
+      <View style={styles.boardContainer}>
+        {board.map((cell, index) => (
+          <Cell key={index} value={cell} onPress={() => handlePress(index)} />
+        ))}
+        <GridLines />
+        <WinningLine combination={winningCombination} />
+      </View>
+
+
+
 
       <View style={styles.scoreBoard}>
         <Text style={styles.scoreText}>X Wins: {xWins}</Text>
@@ -225,9 +414,8 @@ export default function MultiplayerGameScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: "#007BFF",
   },
   title: {
@@ -327,5 +515,27 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginBottom: 10,
     marginLeft: 30,
+  },
+  boardContainer: {
+    width: 300,
+    height: 300,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  line: {
+    position: "absolute",
+    backgroundColor: "black",
   },
 });

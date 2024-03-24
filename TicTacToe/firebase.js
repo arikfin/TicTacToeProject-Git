@@ -1,15 +1,8 @@
 import { initializeApp } from "firebase/app";
-
 import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  getAuth,
-  onAuthStateChanged,
-  User,
-  signOut,
-  sendPasswordResetEmail,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth, onAuthStateChanged, User
+  , signOut, sendPasswordResetEmail,
 } from "firebase/auth";
-
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
@@ -53,3 +46,4 @@ export {
   firestore,
   sendPasswordResetEmail,
 };
+

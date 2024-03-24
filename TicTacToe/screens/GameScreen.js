@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Image,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from "react-native";
 import { auth } from "../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import BoardSinglePlayer from "../components/BoardSinglePlayer.js";
@@ -38,6 +31,7 @@ export default function GameScreen({ navigation }) {
     fetchUserAvatar();
   }, []);
 
+  // Function to handle going back
   const handleGoBack = () => {
     navigation.goBack();
   };
@@ -77,35 +71,18 @@ export default function GameScreen({ navigation }) {
         {userAvatar && (
           <Image source={userAvatar} style={styles.profilePhoto} />
         )}
-        <Image
-          source={require("../assets/robot.jpg")}
-          style={styles.robotPhoto}
-        />
+        <Image source={require("../assets/robot.jpg")} style={styles.robotPhoto} />
       </View>
       <View style={styles.turnIndicators}>
-        <View
-          style={[
-            styles.turnIndicator,
-            currentPlayer === "X" ? styles.activeIndicator : {},
-          ]}
-        >
+        <View style={[styles.turnIndicator, currentPlayer === "X" ? styles.activeIndicator : {},]}>
           <Text style={styles.turnText}>X's Turn</Text>
         </View>
-        <View
-          style={[
-            styles.turnIndicator,
-            currentPlayer === "O" ? styles.activeIndicator : {},
-          ]}
-        >
+        <View style={[styles.turnIndicator, currentPlayer === "O" ? styles.activeIndicator : {},]}>
           <Text style={styles.turnText}>O's Turn</Text>
         </View>
       </View>
 
-      <BoardSinglePlayer
-        key={boardKey}
-        onGameEnd={handleGameEnd}
-        onPlayerChange={handlePlayerChange}
-      />
+      <BoardSinglePlayer key={boardKey} onGameEnd={handleGameEnd} onPlayerChange={handlePlayerChange} />
 
       <View style={styles.scoreBoard}>
         <Text style={styles.scoreText}>X Wins: {xWins}</Text>

@@ -1,32 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TextInput,
-  Button,
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-} from "react-native";
+import { View, TextInput, Alert, StyleSheet, Text, TouchableOpacity } from "react-native";
 import AnimatedBackground from "../components/AnimatedBackground.js";
-import {
-  app,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  getAuth,
-  User,
-  signOut,
-  onAuthStateChanged,
-  auth,
-  sendPasswordResetEmail,
-} from "../firebase.js";
+import { signInWithEmailAndPassword, getAuth, onAuthStateChanged, sendPasswordResetEmail } from "../firebase.js";
 
-export default function LoginScreen({
-  onLogin,
-  fontsLoaded,
-  navigation,
-  user,
-}) {
+export default function LoginScreen({ fontsLoaded, navigation, user }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userID, setUserID] = useState(user ? user.uid : null);
@@ -48,12 +25,10 @@ export default function LoginScreen({
 
   // Function to handle login
   const handleLogin = () => {
-    // If email or password is empty, show an alert
     if (email === "" || password === "") {
       Alert.alert("Error", "Please enter your email and password");
       return;
     }
-
     // Attempt to sign in with email and password
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -84,7 +59,6 @@ export default function LoginScreen({
       Alert.alert("Error", "Please enter your email");
       return;
     }
-
     sendPasswordResetEmail(auth, email)
       .then(() => {
         Alert.alert(
@@ -115,19 +89,8 @@ export default function LoginScreen({
         </View>
       )}
       <View style={styles.frame}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
+        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>

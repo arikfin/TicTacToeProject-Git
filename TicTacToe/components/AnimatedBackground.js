@@ -35,21 +35,16 @@ const AnimatedBackground = () => {
   // Function to render a single shape (X or O)
   const renderShape = (isX, xOffset, key, translateY, rotate) => {
     return (
-      <Animated.View
-        key={key}
-        style={{
-          ...styles.svgElement,
-          left: xOffset,
-          transform: [
-            { translateY: translateY },
-            {
-              rotate: rotate.interpolate({
-                inputRange: [0, 360],
-                outputRange: ["0deg", "360deg"],
-              }),
-            },
-          ],
-        }}
+      <Animated.View key={key} style={{
+        ...styles.svgElement, left: xOffset, transform: [{ translateY: translateY },
+        {
+          rotate: rotate.interpolate({
+            inputRange: [0, 360],
+            outputRange: ["0deg", "360deg"],
+          }),
+        },
+        ],
+      }}
       >
         <Icon name={isX ? "times" : "circle-o"} size={50} color="#E8F0FF" />
       </Animated.View>

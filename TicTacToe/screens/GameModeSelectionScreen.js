@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  Button,
-  Modal,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator, Modal, } from "react-native";
 import AnimatedBackground from "../components/AnimatedBackground.js";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
@@ -66,26 +58,13 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
         </View>
       )}
       <View style={styles.frame}>
-        <TouchableOpacity
-          onPress={handleSinglePlayerPress}
-          style={styles.button}
-        >
+        <TouchableOpacity onPress={handleSinglePlayerPress} style={styles.button}>
           <Text style={styles.buttonText}>On Phone</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={handleMultiplayerPress}
-          style={[styles.button, { marginTop: 20 }]}
-        >
+        <TouchableOpacity onPress={handleMultiplayerPress} style={[styles.button, { marginTop: 20 }]}>
           <Text style={styles.buttonText}>Online</Text>
         </TouchableOpacity>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          statusBarTranslucent={true}
-        >
+        <Modal animationType="slide" transparent={true} visible={modalVisible} statusBarTranslucent={true}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContent}>
               <Text>Searching for players...</Text>
@@ -93,11 +72,7 @@ export default function GameModeSelectionScreen({ fontsLoaded, navigation }) {
             </View>
           </View>
         </Modal>
-
-        <TouchableOpacity
-          onPress={handleSignOut}
-          style={[styles.signOutButton, { marginTop: 20 }]}
-        >
+        <TouchableOpacity onPress={handleSignOut} style={[styles.signOutButton, { marginTop: 20 }]}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>

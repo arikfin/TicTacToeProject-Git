@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Alert,
-  Image,
-  Modal,
-  FlatList,
-} from "react-native";
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Alert, Image, Modal, FlatList, } from "react-native";
 import AnimatedBackground from "../components/AnimatedBackground";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc, updateDoc } from "firebase/firestore";
@@ -26,16 +16,7 @@ import avatar6 from "../assets/avatars/hipster-male.jpg";
 import avatar7 from "../assets/avatars/white-female.jpg";
 import avatar8 from "../assets/avatars/white-male.jpg";
 
-const avatars = [
-  avatar1,
-  avatar2,
-  avatar3,
-  avatar4,
-  avatar5,
-  avatar6,
-  avatar7,
-  avatar8,
-];
+const avatars = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8,];
 
 const avatarUrls = [
   "https://firebasestorage.googleapis.com/v0/b/tictactoeapp-b558d.appspot.com/o/avatars%2Fblack-female.jpg?alt=media&token=50529a12-7172-47e9-8209-e32e446b9c69",
@@ -133,29 +114,16 @@ export default function ProfileScreen({ navigation, user }) {
       <AnimatedBackground />
       <View style={styles.frame}>
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Image
-            source={selectedAvatar ? { uri: selectedAvatar } : defaultAvatar}
-            style={styles.avatar}
-          />
+          <Image source={selectedAvatar ? { uri: selectedAvatar } : defaultAvatar} style={styles.avatar} />
         </TouchableOpacity>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={isModalVisible}
-          onRequestClose={() => setIsModalVisible(false)}
-        >
+        <Modal animationType="slide" transparent={true} visible={isModalVisible} onRequestClose={() => setIsModalVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <FlatList
-                data={avatars}
-                renderItem={({ item, index }) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleAvatarSelect(index)}
-                  >
-                    <Image source={avatars[index]} style={styles.modalAvatar} />
-                  </TouchableOpacity>
-                )}
+              <FlatList data={avatars} renderItem={({ item, index }) => (
+                <TouchableOpacity key={index} onPress={() => handleAvatarSelect(index)}>
+                  <Image source={avatars[index]} style={styles.modalAvatar} />
+                </TouchableOpacity>
+              )}
                 keyExtractor={(item, index) => index.toString()}
                 numColumns={2} // Two columns
               />
