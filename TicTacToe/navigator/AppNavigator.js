@@ -26,8 +26,10 @@ export default function AppNavigator({ user, onLogin, fontsLoaded }) {
       <Stack.Screen name="Game" options={{ headerShown: false }}
         component={GameScreen} />
 
-      <Stack.Screen name="MultiplayerGame" options={{ headerShown: false }}
-        component={MultiPlayerScreen} />
+      <Stack.Screen name="MultiplayerGame" options={{ headerShown: false }}>
+        {(props) => <MultiPlayerScreen {...props} user={user} />}
+      </Stack.Screen>
     </Stack.Navigator>
+
   );
 }

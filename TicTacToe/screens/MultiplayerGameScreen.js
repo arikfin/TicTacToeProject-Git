@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import Cell from "../components/Cell";
 import { auth, firestore } from "../firebase";
-import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, getDoc, collection, addDoc } from 'firebase/firestore';
 
-export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user }) {
+export default function MultiPlayerGameScreen({ route, navigation, onPlayerChange, user }) {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [gameOver, setGameOver] = useState(false);
@@ -19,57 +19,63 @@ export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user
   const [oWins, setOWins] = useState(0);
   const [draws, setDraws] = useState(0);
   const [userAvatar, setUserAvatar] = useState(null);
-  const [gameDocRef, setGameDocRef] = useState(null);
+  const gameDocRef = useRef(null);
 
+  const { gameId } = route.params;
+
+  useEffect(() => {
+    gameDocRef.current = doc(firestore, "games", gameId);
+  })
 
   const startNewGame = async (playerId) => {
     // Get a reference to the games collection
-    const gamesRef = firestore.collection('games');
+    const gamesRef = collection(firestore, "games");
 
     // Create a new game document with the initial game state
-    const docRef = await gamesRef.add({
+    const docRef = await addDoc(gamesRef, {
       board: Array(9).fill(null),
       currentTurn: "X",
-      draw: false,
       gameOver: false,
-      playerId: playerId,
-      winner: null
+      winner: null,
+      playerXId: auth.currentUser.uid,
+      draw: false,
     });
 
     console.log("New game created with ID: ", docRef.id);
 
     // Save the game document reference
-    setGameDocRef(docRef);
+    gameDocRef.current = docRef;
     console.log("After setGameDocRef: ", gameDocRef);
 
-    // Set up the listener for changes to the game document
-    const unsubscribe = docRef.onSnapshot((doc) => {
-      if (doc.exists) {
-        // Update the game state with the data from Firestore
-        const data = doc.data();
-        setBoard(data.board);
-        setCurrentPlayer(data.currentTurn);
-        setGameOver(data.gameOver);
-        // ... update other state variables as needed
-      } else {
-        console.log("No such document!");
-      }
-    });
-
-    // Return a cleanup function to unsubscribe from the listener
-    return unsubscribe;
+    // TODO: please check this
+    // // Set up the listener for changes to the game document
+    // const unsubscribe = docRef.onSnapshot((doc) => {
+    //   if (doc.exists) {
+    //     // Update the game state with the data from Firestore
+    //     const data = doc.data();
+    //     setBoard(data.board);
+    //     setCurrentPlayer(data.currentTurn);
+    //     setGameOver(data.gameOver);
+    //     // ... update other state variables as needed
+    //   } else {
+    //     console.log("No such document!");
+    //   }
+    // });
+    //
+    // // Return a cleanup function to unsubscribe from the listener
+    // return unsubscribe;
   };
 
 
-  useEffect(() => {
-    let unsubscribe = () => { };
-
-    if (gameDocRef && user && user.uid) {
-      unsubscribe = startNewGame(user.uid);
-    }
-
-    return unsubscribe; // Clean up the listener when the component unmounts or gameDocRef/user changes
-  }, [gameDocRef, user]);
+  // useEffect(() => {
+  //   let unsubscribe = () => { };
+  //
+  //   if (gameDocRef.current && user && user.uid) {
+  //     unsubscribe = startNewGame(user.uid);
+  //   }
+  //
+  //   return unsubscribe; // Clean up the listener when the component unmounts or gameDocRef/user changes
+  // }, [gameDocRef.current, user]);
 
 
 
@@ -86,50 +92,43 @@ export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user
     console.log('initializeGameDocRef called');
     if (user && user.uid) {
       console.log('user.uid:', user.uid);
-      const docRef = await startNewGame(user.uid);
-      setGameDocRef(docRef);
-      console.log('gameDocRef set:', gameDocRef);
+      await startNewGame(user.uid);
+      // setGameDocRef(docRef);
+      // gameDocRef.current = docRef()
+      console.log('gameDocRef set:', gameDocRef.current);
     } else {
       console.log('user or user.uid is not available');
     }
   };
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log('User signed in:', user);
-        setUser(user);
-        initializeGameDocRef();
-      } else {
-        console.log('No user signed in');
-      }
-    });
-
-    return unsubscribe; // Unsubscribe from the listener when the component unmounts
-  }, []);
-
-
-
-
   // useEffect(() => {
-  //   console.log('Component mounted, user:', user);
-  //   initializeGameDocRef();
+  //   const unsubscribe = auth.onAuthStateChanged((user) => {
+  //     if (user) {
+  //       console.log('User signed in:', user);
+  //       // setUser(user);
+  //       initializeGameDocRef();
+  //     } else {
+  //       console.log('No user signed in');
+  //     }
+  //   });
+  //
+  //   return unsubscribe; // Unsubscribe from the listener when the component unmounts
   // }, []);
 
 
 
   // Fetch the game ID from Firestore when the component mounts
-  useEffect(() => {
-    const fetchGameId = async () => {
-      // Replace with your actual Firestore query
-      const db = getFirestore();
-      const gameRef = doc(db, "games");
-      const gameDoc = await getDoc(gameRef);
-      setGameId(gameDoc.id);
-    };
-
-    fetchGameId();
-  }, []);
+  // useEffect(() => {
+  //   const fetchGameId = async () => {
+  //     // Replace with your actual Firestore query
+  //     // const db = getFirestore();
+  //     // const gameRef = doc(db, "games",
+  //     // const gameDoc = await getDoc(gameDocRef.current);
+  //     // setGameId(gameDoc.id);
+  //   };
+  //
+  //   fetchGameId();
+  // }, []);
 
 
   // Use the useEffect hook to animate the lines and call the onPlayerChange function when the current player changes
@@ -184,6 +183,7 @@ export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user
     setWinningCombination(null); // Reset the winning combination
     setGameResult(null); // Reset the game result
     setBoardKey((prevKey) => prevKey + 1); // Increment the board key to force a re-render of the board
+    initializeGameDocRef();
   };
 
   // Function to handle changing the current player
@@ -218,11 +218,12 @@ export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user
   const handlePress = async (index) => {
     console.log('handlePress called');
 
-    while (!gameDocRef) {
+    console.log('gameDocRef=',gameDocRef.current);
+    while (!gameDocRef.current) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    if (!gameDocRef) {
+    if (!gameDocRef.current) {
       console.log("Game document reference not available. Cannot handle press.");
       return; // Exit the function early if gameDocRef is not available
     }
@@ -256,7 +257,7 @@ export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user
 
 
     // Update the game document in Firestore
-    await updateDoc(gameDocRef, {
+    await updateDoc(gameDocRef.current, {
       board: newBoard,
       currentTurn: newCurrentPlayer,
       gameOver: newGameOver,
@@ -387,7 +388,6 @@ export default function MultiPlayerGameScreen({ navigation, onPlayerChange, user
         <GridLines />
         <WinningLine combination={winningCombination} />
       </View>
-
 
 
 
